@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
+	"github.com/fivetwenty-io/capi/v3/pkg/capi"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
@@ -43,13 +44,13 @@ var _ = Describe("given QuotaManager", func() {
 
 	Context("ListAllSpaceQuotasForOrg()", func() {
 		It("should return 2 quotas", func() {
-			fakeSpaceQuotaClient.ListAllReturns([]*resource.SpaceQuota{
+			fakeSpaceQuotaClient.ListAllReturns([]*capi.SpaceQuotaV3{
 				{
 					Name: "quota-1",
-					GUID: "quota-1-guid",
-					Relationships: resource.SpaceQuotaRelationships{
-						Organization: &resource.ToOneRelationship{
-							Data: &resource.Relationship{
+					Resource: capi.Resource{GUID: "quota-1-guid"},
+					Relationships: &capi.SpaceQuotaRelationships{
+						Organization: capi.Relationship{
+							Data: &capi.RelationshipData{
 								GUID: "orgGUID",
 							},
 						},
@@ -57,10 +58,10 @@ var _ = Describe("given QuotaManager", func() {
 				},
 				{
 					Name: "quota-2",
-					GUID: "quota-2-guid",
-					Relationships: resource.SpaceQuotaRelationships{
-						Organization: &resource.ToOneRelationship{
-							Data: &resource.Relationship{
+					Resource: capi.Resource{GUID: "quota-2-guid"},
+					Relationships: &capi.SpaceQuotaRelationships{
+						Organization: capi.Relationship{
+							Data: &capi.RelationshipData{
 								GUID: "orgGUID",
 							},
 						},
@@ -68,10 +69,10 @@ var _ = Describe("given QuotaManager", func() {
 				},
 				{
 					Name: "quota-3",
-					GUID: "quota-3-guid",
-					Relationships: resource.SpaceQuotaRelationships{
-						Organization: &resource.ToOneRelationship{
-							Data: &resource.Relationship{
+					Resource: capi.Resource{GUID: "quota-3-guid"},
+					Relationships: &capi.SpaceQuotaRelationships{
+						Organization: capi.Relationship{
+							Data: &capi.RelationshipData{
 								GUID: "orgGUID-other",
 							},
 						},
@@ -147,7 +148,7 @@ var _ = Describe("given QuotaManager", func() {
 			}, nil)
 		})
 		It("should create a quota and assign it", func() {
-			fakeSpaceQuotaClient.CreateReturns(&resource.SpaceQuota{Name: "space1", GUID: "space-quota-guid"}, nil)
+			fakeSpaceQuotaClient.CreateReturns(&capi.SpaceQuotaV3{Name: "space1", Resource: capi.Resource{GUID: "space-quota-guid"}}, nil)
 			fakeSpaceMgr.FindSpaceReturns(&resource.Space{
 				Name: "space1",
 				GUID: "space1-guid",
@@ -164,10 +165,10 @@ var _ = Describe("given QuotaManager", func() {
 			Expect(err).Should(BeNil())
 			Expect(fakeSpaceQuotaClient.CreateCallCount()).Should(Equal(1))
 			_, quotaRequest := fakeSpaceQuotaClient.CreateArgsForCall(0)
-			Expect(*quotaRequest.Name).Should(Equal("space1"))
+			Expect(quotaRequest.Name).Should(Equal("space1"))
 			Expect(quotaRequest.Relationships).ShouldNot(BeNil())
 			Expect(quotaRequest.Relationships.Spaces).ShouldNot(BeNil())
-			Expect(quotaRequest.Relationships.Spaces.Data).Should(ContainElement(resource.Relationship{GUID: "space1-guid"}))
+			Expect(quotaRequest.Relationships.Spaces.Data).Should(ContainElement(capi.RelationshipData{GUID: "space1-guid"}))
 			Expect(quotaRequest.Apps.TotalInstances).Should(BeNil())
 			Expect(quotaRequest.Apps.PerAppTasks).Should(BeNil())
 			Expect(quotaRequest.Apps.TotalMemoryInMB).ShouldNot(BeNil())
@@ -193,7 +194,7 @@ var _ = Describe("given QuotaManager", func() {
 					MemoryLimit:      "unlimited",
 				},
 			}, nil)
-			fakeSpaceQuotaClient.CreateReturns(&resource.SpaceQuota{Name: "space1", GUID: "space-quota-guid"}, nil)
+			fakeSpaceQuotaClient.CreateReturns(&capi.SpaceQuotaV3{Name: "space1", Resource: capi.Resource{GUID: "space-quota-guid"}}, nil)
 			fakeOrgReader.FindOrgReturns(&resource.Organization{
 				Name: "org1",
 				GUID: "org-guid",
@@ -217,16 +218,16 @@ var _ = Describe("given QuotaManager", func() {
 					},
 				},
 			}, nil)
-			fakeOrgQuotaClient.ListAllReturns([]*resource.OrganizationQuota{
+			fakeOrgQuotaClient.ListAllReturns([]*capi.OrganizationQuota{
 				{
-					GUID: "org1-quota-guid",
-					Apps: resource.OrganizationQuotaApps{
+					Resource: capi.Resource{GUID: "org1-quota-guid"},
+					Apps: &capi.OrganizationQuotaApps{
 						TotalMemoryInMB: util.GetIntPointer(1000),
 					},
 				},
 				{
-					GUID: "org2-quota-guid",
-					Apps: resource.OrganizationQuotaApps{
+					Resource: capi.Resource{GUID: "org2-quota-guid"},
+					Apps: &capi.OrganizationQuotaApps{
 						TotalMemoryInMB: util.GetIntPointer(1000),
 					},
 				},
@@ -235,7 +236,7 @@ var _ = Describe("given QuotaManager", func() {
 			Expect(err).Should(BeNil())
 			Expect(fakeSpaceQuotaClient.CreateCallCount()).Should(Equal(1))
 			_, quotaRequest := fakeSpaceQuotaClient.CreateArgsForCall(0)
-			Expect(*quotaRequest.Name).Should(Equal("space1"))
+			Expect(quotaRequest.Name).Should(Equal("space1"))
 			Expect(quotaRequest.Apps).ShouldNot(BeNil())
 			Expect(quotaRequest.Apps.TotalMemoryInMB).Should(BeNil())
 			Expect(fakeSpaceQuotaClient.ApplyCallCount()).Should(Equal(0))
@@ -247,17 +248,17 @@ var _ = Describe("given QuotaManager", func() {
 			Expect(err).ShouldNot(BeNil())
 			Expect(fakeSpaceQuotaClient.CreateCallCount()).Should(Equal(1))
 			_, quotaRequest := fakeSpaceQuotaClient.CreateArgsForCall(0)
-			Expect(*quotaRequest.Name).Should(Equal("space1"))
+			Expect(quotaRequest.Name).Should(Equal("space1"))
 		})
 
 		It("should update a quota and assign it", func() {
-			fakeSpaceQuotaClient.ListAllReturns([]*resource.SpaceQuota{
+			fakeSpaceQuotaClient.ListAllReturns([]*capi.SpaceQuotaV3{
 				{
 					Name: "space1",
-					GUID: "space-quota-guid",
-					Relationships: resource.SpaceQuotaRelationships{
-						Organization: &resource.ToOneRelationship{
-							Data: &resource.Relationship{
+					Resource: capi.Resource{GUID: "space-quota-guid"},
+					Relationships: &capi.SpaceQuotaRelationships{
+						Organization: capi.Relationship{
+							Data: &capi.RelationshipData{
 								GUID: "org1-guid",
 							},
 						},
@@ -276,7 +277,7 @@ var _ = Describe("given QuotaManager", func() {
 					},
 				},
 			}, nil)
-			fakeSpaceQuotaClient.UpdateReturns(&resource.SpaceQuota{Name: "space1", GUID: "space-quota-guid"}, nil)
+			fakeSpaceQuotaClient.UpdateReturns(&capi.SpaceQuotaV3{Name: "space1", Resource: capi.Resource{GUID: "space-quota-guid"}}, nil)
 			err := quotaMgr.CreateSpaceQuotas()
 
 			Expect(err).Should(BeNil())
@@ -284,7 +285,6 @@ var _ = Describe("given QuotaManager", func() {
 			_, quotaGUID, quotaRequest := fakeSpaceQuotaClient.UpdateArgsForCall(0)
 			Expect(quotaGUID).Should(Equal("space-quota-guid"))
 			Expect(*quotaRequest.Name).Should(Equal("space1"))
-			Expect(quotaRequest.Relationships).Should(BeNil())
 			Expect(fakeSpaceQuotaClient.ApplyCallCount()).Should(Equal(1))
 			_, quotaGUID, spaceGUIDs := fakeSpaceQuotaClient.ApplyArgsForCall(0)
 			Expect(quotaGUID).Should(Equal("space-quota-guid"))
@@ -308,13 +308,13 @@ var _ = Describe("given QuotaManager", func() {
 					},
 				},
 			}, nil)
-			fakeSpaceQuotaClient.ListAllReturns([]*resource.SpaceQuota{
+			fakeSpaceQuotaClient.ListAllReturns([]*capi.SpaceQuotaV3{
 				{
 					Name: "space1",
-					GUID: "space-quota-guid",
-					Relationships: resource.SpaceQuotaRelationships{
-						Organization: &resource.ToOneRelationship{
-							Data: &resource.Relationship{
+					Resource: capi.Resource{GUID: "space-quota-guid"},
+					Relationships: &capi.SpaceQuotaRelationships{
+						Organization: capi.Relationship{
+							Data: &capi.RelationshipData{
 								GUID: "org1-guid",
 							},
 						},
@@ -348,28 +348,28 @@ var _ = Describe("given QuotaManager", func() {
 						}},
 				},
 			}, nil)
-			fakeSpaceQuotaClient.ListAllReturns([]*resource.SpaceQuota{
+			fakeSpaceQuotaClient.ListAllReturns([]*capi.SpaceQuotaV3{
 				{
 					Name: "space1",
-					GUID: "space-quota-guid",
-					Relationships: resource.SpaceQuotaRelationships{
-						Organization: &resource.ToOneRelationship{
-							Data: &resource.Relationship{
+					Resource: capi.Resource{GUID: "space-quota-guid"},
+					Relationships: &capi.SpaceQuotaRelationships{
+						Organization: capi.Relationship{
+							Data: &capi.RelationshipData{
 								GUID: "org1-guid",
 							},
 						},
 					},
-					Apps: resource.SpaceQuotaApps{
+					Apps: &capi.SpaceQuotaApps{
 						TotalInstances:       nil,
 						PerAppTasks:          nil,
 						TotalMemoryInMB:      util.GetIntPointer(10240),
 						PerProcessMemoryInMB: nil,
 					},
-					Routes: resource.SpaceQuotaRoutes{
+					Routes: &capi.SpaceQuotaRoutes{
 						TotalRoutes:        util.GetIntPointer(1000),
 						TotalReservedPorts: util.GetIntPointer(0),
 					},
-					Services: resource.SpaceQuotaServices{
+					Services: &capi.SpaceQuotaServices{
 						TotalServiceInstances: util.GetIntPointer(100),
 						TotalServiceKeys:      nil,
 						PaidServicesAllowed:   util.GetBooleanPointer(true),
@@ -384,13 +384,13 @@ var _ = Describe("given QuotaManager", func() {
 		})
 
 		It("should error updating a quota", func() {
-			fakeSpaceQuotaClient.ListAllReturns([]*resource.SpaceQuota{
+			fakeSpaceQuotaClient.ListAllReturns([]*capi.SpaceQuotaV3{
 				{
 					Name: "space1",
-					GUID: "space-quota-guid",
-					Relationships: resource.SpaceQuotaRelationships{
-						Organization: &resource.ToOneRelationship{
-							Data: &resource.Relationship{
+					Resource: capi.Resource{GUID: "space-quota-guid"},
+					Relationships: &capi.SpaceQuotaRelationships{
+						Organization: capi.Relationship{
+							Data: &capi.RelationshipData{
 								GUID: "org1-guid",
 							},
 						},
@@ -466,7 +466,7 @@ var _ = Describe("given QuotaManager", func() {
 					},
 				},
 			}, nil)
-			fakeSpaceQuotaClient.CreateReturns(&resource.SpaceQuota{Name: "space1", GUID: "space-quota-guid"}, nil)
+			fakeSpaceQuotaClient.CreateReturns(&capi.SpaceQuotaV3{Name: "space1", Resource: capi.Resource{GUID: "space-quota-guid"}}, nil)
 			fakeOrgReader.FindOrgReturns(&resource.Organization{
 				Name: "Test",
 				GUID: "org-guid-test",
@@ -478,16 +478,16 @@ var _ = Describe("given QuotaManager", func() {
 					},
 				},
 			}, nil)
-			fakeOrgQuotaClient.ListAllReturns([]*resource.OrganizationQuota{
+			fakeOrgQuotaClient.ListAllReturns([]*capi.OrganizationQuota{
 				{
-					GUID: "org1-quota-guid",
-					Apps: resource.OrganizationQuotaApps{
+					Resource: capi.Resource{GUID: "org1-quota-guid"},
+					Apps: &capi.OrganizationQuotaApps{
 						TotalMemoryInMB: util.GetIntPointer(1000),
 					},
 				},
 				{
-					GUID: "org2-quota-guid",
-					Apps: resource.OrganizationQuotaApps{
+					Resource: capi.Resource{GUID: "org2-quota-guid"},
+					Apps: &capi.OrganizationQuotaApps{
 						TotalMemoryInMB: util.GetIntPointer(1000),
 					},
 				},
@@ -496,7 +496,7 @@ var _ = Describe("given QuotaManager", func() {
 			Expect(err).Should(BeNil())
 			Expect(fakeSpaceQuotaClient.CreateCallCount()).Should(Equal(1))
 			_, quotaRequest := fakeSpaceQuotaClient.CreateArgsForCall(0)
-			Expect(*quotaRequest.Name).Should(Equal("space1"))
+			Expect(quotaRequest.Name).Should(Equal("space1"))
 			Expect(quotaRequest.Apps).ShouldNot(BeNil())
 			Expect(quotaRequest.Apps.TotalMemoryInMB).Should(BeNil())
 			Expect(quotaRequest.Apps.TotalInstances).Should(BeNil())
@@ -540,12 +540,12 @@ var _ = Describe("given QuotaManager", func() {
 			fakeOrgReader.FindOrgReturns(&resource.Organization{Name: "org1", GUID: "org-guid"}, nil)
 		})
 		It("should create a quota and assign it", func() {
-			fakeOrgQuotaClient.CreateReturns(&resource.OrganizationQuota{Name: "org1", GUID: "org-quota-guid"}, nil)
+			fakeOrgQuotaClient.CreateReturns(&capi.OrganizationQuota{Name: "org1", Resource: capi.Resource{GUID: "org-quota-guid"}}, nil)
 			err := quotaMgr.CreateOrgQuotas()
 			Expect(err).Should(BeNil())
 			Expect(fakeOrgQuotaClient.CreateCallCount()).Should(Equal(1))
 			_, quotaRequest := fakeOrgQuotaClient.CreateArgsForCall(0)
-			Expect(*quotaRequest.Name).Should(Equal("org1"))
+			Expect(quotaRequest.Name).Should(Equal("org1"))
 			Expect(fakeOrgQuotaClient.ApplyCallCount()).Should(Equal(1))
 			_, orgGUID, orgRequest := fakeOrgQuotaClient.ApplyArgsForCall(0)
 			Expect(orgGUID).Should(Equal("org-quota-guid"))
@@ -558,15 +558,15 @@ var _ = Describe("given QuotaManager", func() {
 			Expect(err).ShouldNot(BeNil())
 			Expect(fakeOrgQuotaClient.CreateCallCount()).Should(Equal(1))
 			_, quotaRequest := fakeOrgQuotaClient.CreateArgsForCall(0)
-			Expect(*quotaRequest.Name).Should(Equal("org1"))
+			Expect(quotaRequest.Name).Should(Equal("org1"))
 		})
 
 		It("should update a quota and assign it", func() {
-			fakeOrgQuotaClient.ListAllReturns([]*resource.OrganizationQuota{
+			fakeOrgQuotaClient.ListAllReturns([]*capi.OrganizationQuota{
 				{
 					Name: "org1",
-					GUID: "org-quota-guid",
-					Routes: resource.OrganizationQuotaRoutes{
+					Resource: capi.Resource{GUID: "org-quota-guid"},
+					Routes: &capi.OrganizationQuotaRoutes{
 						TotalRoutes: util.GetIntPointer(100),
 					},
 				},
@@ -595,11 +595,11 @@ var _ = Describe("given QuotaManager", func() {
 					},
 				},
 			}, nil)
-			fakeOrgQuotaClient.ListAllReturns([]*resource.OrganizationQuota{
+			fakeOrgQuotaClient.ListAllReturns([]*capi.OrganizationQuota{
 				{
 					Name: "org1",
-					GUID: "org-quota-guid",
-					Routes: resource.OrganizationQuotaRoutes{
+					Resource: capi.Resource{GUID: "org-quota-guid"},
+					Routes: &capi.OrganizationQuotaRoutes{
 						TotalRoutes: util.GetIntPointer(100),
 					},
 				},
@@ -634,26 +634,26 @@ var _ = Describe("given QuotaManager", func() {
 					},
 				},
 			}, nil)
-			fakeOrgQuotaClient.ListAllReturns([]*resource.OrganizationQuota{
+			fakeOrgQuotaClient.ListAllReturns([]*capi.OrganizationQuota{
 				{
 					Name: "org1",
-					GUID: "org-quota-guid",
-					Apps: resource.OrganizationQuotaApps{
+					Resource: capi.Resource{GUID: "org-quota-guid"},
+					Apps: &capi.OrganizationQuotaApps{
 						TotalInstances:       nil,
 						PerAppTasks:          nil,
 						TotalMemoryInMB:      nil,
 						PerProcessMemoryInMB: nil,
 					},
-					Routes: resource.OrganizationQuotaRoutes{
+					Routes: &capi.OrganizationQuotaRoutes{
 						TotalRoutes:        nil,
 						TotalReservedPorts: nil,
 					},
-					Services: resource.OrganizationQuotaServices{
+					Services: &capi.OrganizationQuotaServices{
 						TotalServiceInstances: nil,
 						TotalServiceKeys:      nil,
 						PaidServicesAllowed:   util.GetBooleanPointer(true),
 					},
-					Domains: resource.OrganizationQuotaDomains{
+					Domains: &capi.OrganizationQuotaDomains{
 						TotalDomains: nil,
 					},
 				},
@@ -676,11 +676,11 @@ var _ = Describe("given QuotaManager", func() {
 					},
 				},
 			}, nil)
-			fakeOrgQuotaClient.ListAllReturns([]*resource.OrganizationQuota{
+			fakeOrgQuotaClient.ListAllReturns([]*capi.OrganizationQuota{
 				{
 					Name: "org1",
-					GUID: "org-quota-guid",
-					Routes: resource.OrganizationQuotaRoutes{
+					Resource: capi.Resource{GUID: "org-quota-guid"},
+					Routes: &capi.OrganizationQuotaRoutes{
 						TotalRoutes: util.GetIntPointer(10),
 					},
 				},
@@ -703,11 +703,11 @@ var _ = Describe("given QuotaManager", func() {
 					},
 				},
 			}, nil)
-			fakeOrgQuotaClient.ListAllReturns([]*resource.OrganizationQuota{
+			fakeOrgQuotaClient.ListAllReturns([]*capi.OrganizationQuota{
 				{
 					Name: "org1",
-					GUID: "org-quota-guid2",
-					Routes: resource.OrganizationQuotaRoutes{
+					Resource: capi.Resource{GUID: "org-quota-guid2"},
+					Routes: &capi.OrganizationQuotaRoutes{
 						TotalRoutes: util.GetIntPointer(100),
 					},
 				},
@@ -751,7 +751,7 @@ var _ = Describe("given QuotaManager", func() {
 		It("should update a quota", func() {
 			fakeSpaceQuotaClient.UpdateReturns(nil, nil)
 
-			err := quotaMgr.UpdateSpaceQuota("quotaGUID", &resource.SpaceQuotaCreateOrUpdate{Name: util.GetStringPointer("quota")})
+			err := quotaMgr.UpdateSpaceQuota("quotaGUID", &capi.SpaceQuotaV3CreateRequest{Name: "quota"})
 			Expect(err).Should(BeNil())
 			Expect(fakeSpaceQuotaClient.UpdateCallCount()).Should(Equal(1))
 		})
@@ -759,14 +759,14 @@ var _ = Describe("given QuotaManager", func() {
 			quotaMgr.Peek = true
 			fakeSpaceQuotaClient.UpdateReturns(nil, nil)
 
-			err := quotaMgr.UpdateSpaceQuota("quotaGUID", &resource.SpaceQuotaCreateOrUpdate{Name: util.GetStringPointer("quota")})
+			err := quotaMgr.UpdateSpaceQuota("quotaGUID", &capi.SpaceQuotaV3CreateRequest{Name: "quota"})
 			Expect(err).Should(BeNil())
 			Expect(fakeSpaceQuotaClient.UpdateCallCount()).Should(Equal(0))
 		})
 		It("should return an error", func() {
 			fakeSpaceQuotaClient.UpdateReturns(nil, errors.New("error"))
 
-			err := quotaMgr.UpdateSpaceQuota("quotaGUID", &resource.SpaceQuotaCreateOrUpdate{Name: util.GetStringPointer("quota")})
+			err := quotaMgr.UpdateSpaceQuota("quotaGUID", &capi.SpaceQuotaV3CreateRequest{Name: "quota"})
 			Expect(err).ShouldNot(BeNil())
 		})
 	})
@@ -776,7 +776,7 @@ var _ = Describe("given QuotaManager", func() {
 			fakeSpaceQuotaClient.CreateReturns(nil, nil)
 			fakeOrgReader.FindOrgReturns(&resource.Organization{Name: "org1", GUID: "org-guid"}, nil)
 
-			_, err := quotaMgr.CreateSpaceQuota(&resource.SpaceQuotaCreateOrUpdate{Name: util.GetStringPointer("quota")})
+			_, err := quotaMgr.CreateSpaceQuota(&capi.SpaceQuotaV3CreateRequest{Name: "quota"})
 			Expect(err).Should(BeNil())
 			Expect(fakeSpaceQuotaClient.CreateCallCount()).Should(Equal(1))
 		})
@@ -784,14 +784,14 @@ var _ = Describe("given QuotaManager", func() {
 			quotaMgr.Peek = true
 			fakeSpaceQuotaClient.CreateReturns(nil, nil)
 
-			_, err := quotaMgr.CreateSpaceQuota(&resource.SpaceQuotaCreateOrUpdate{Name: util.GetStringPointer("quota")})
+			_, err := quotaMgr.CreateSpaceQuota(&capi.SpaceQuotaV3CreateRequest{Name: "quota"})
 			Expect(err).Should(BeNil())
 			Expect(fakeSpaceQuotaClient.CreateCallCount()).Should(Equal(0))
 		})
 		It("should return an error", func() {
 			fakeSpaceQuotaClient.CreateReturns(nil, errors.New("error"))
 
-			_, err := quotaMgr.CreateSpaceQuota(&resource.SpaceQuotaCreateOrUpdate{Name: util.GetStringPointer("quota")})
+			_, err := quotaMgr.CreateSpaceQuota(&capi.SpaceQuotaV3CreateRequest{Name: "quota"})
 			Expect(err).ShouldNot(BeNil())
 		})
 	})
@@ -809,7 +809,7 @@ var _ = Describe("given QuotaManager", func() {
 					NamedQuota: "my-named-quota",
 				},
 			}, nil)
-			fakeOrgQuotaClient.CreateReturns(&resource.OrganizationQuota{GUID: "my-named-quota-guid", Name: "my-named-quota"}, nil)
+			fakeOrgQuotaClient.CreateReturns(&capi.OrganizationQuota{Resource: capi.Resource{GUID: "my-named-quota-guid"}, Name: "my-named-quota"}, nil)
 			fakeOrgReader.FindOrgReturns(&resource.Organization{Name: "test"}, nil)
 
 			err := quotaMgr.CreateOrgQuotas()
@@ -834,7 +834,7 @@ var _ = Describe("given QuotaManager", func() {
 					EnableSpaceQuota: false,
 				},
 			}, nil)
-			fakeSpaceQuotaClient.CreateReturns(&resource.SpaceQuota{GUID: "my-named-quota-guid", Name: "my-named-quota"}, nil)
+			fakeSpaceQuotaClient.CreateReturns(&capi.SpaceQuotaV3{Resource: capi.Resource{GUID: "my-named-quota-guid"}, Name: "my-named-quota"}, nil)
 			fakeSpaceMgr.FindSpaceReturns(&resource.Space{
 				Name: "test-space",
 				GUID: "test-space-guid",
@@ -875,7 +875,7 @@ var _ = Describe("given QuotaManager", func() {
 					EnableSpaceQuota: true,
 				},
 			}, nil)
-			fakeSpaceQuotaClient.CreateReturns(&resource.SpaceQuota{GUID: "test-space-quota-guid", Name: "test-space"}, nil)
+			fakeSpaceQuotaClient.CreateReturns(&capi.SpaceQuotaV3{Resource: capi.Resource{GUID: "test-space-quota-guid"}, Name: "test-space"}, nil)
 			fakeSpaceMgr.FindSpaceReturns(&resource.Space{
 				Name: "test-space",
 				GUID: "test-space-guid",
@@ -902,7 +902,7 @@ var _ = Describe("given QuotaManager", func() {
 			err := quotaMgr.CreateSpaceQuotas()
 			Expect(err).ShouldNot(HaveOccurred())
 			_, createQuotaRequest := fakeSpaceQuotaClient.CreateArgsForCall(0)
-			Expect(*createQuotaRequest.Name).Should(Equal("test-space"))
+			Expect(createQuotaRequest.Name).Should(Equal("test-space"))
 			Expect(fakeSpaceQuotaClient.CreateCallCount()).Should(Equal(1))
 			Expect(fakeSpaceQuotaClient.ApplyCallCount()).Should(Equal(0))
 		})
@@ -921,7 +921,7 @@ var _ = Describe("given QuotaManager", func() {
 					EnableSpaceQuota: false,
 				},
 			}, nil)
-			fakeSpaceQuotaClient.CreateReturns(&resource.SpaceQuota{GUID: "my-named-quota-guid", Name: "my-named-quota"}, nil)
+			fakeSpaceQuotaClient.CreateReturns(&capi.SpaceQuotaV3{Resource: capi.Resource{GUID: "my-named-quota-guid"}, Name: "my-named-quota"}, nil)
 			fakeSpaceMgr.FindSpaceReturns(&resource.Space{Name: "test-space"}, nil)
 
 			err := quotaMgr.CreateSpaceQuotas()

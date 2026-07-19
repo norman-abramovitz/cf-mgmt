@@ -5,8 +5,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/cloudfoundry-community/go-cfclient/v3/client"
-	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
+	"github.com/fivetwenty-io/capi/v3/pkg/capi"
 	"github.com/vmwarepivotallabs/cf-mgmt/quota"
 )
 
@@ -26,61 +25,61 @@ type FakeCFSpaceQuotaClient struct {
 		result1 []string
 		result2 error
 	}
-	CreateStub        func(context.Context, *resource.SpaceQuotaCreateOrUpdate) (*resource.SpaceQuota, error)
+	CreateStub        func(context.Context, *capi.SpaceQuotaV3CreateRequest) (*capi.SpaceQuotaV3, error)
 	createMutex       sync.RWMutex
 	createArgsForCall []struct {
 		arg1 context.Context
-		arg2 *resource.SpaceQuotaCreateOrUpdate
+		arg2 *capi.SpaceQuotaV3CreateRequest
 	}
 	createReturns struct {
-		result1 *resource.SpaceQuota
+		result1 *capi.SpaceQuotaV3
 		result2 error
 	}
 	createReturnsOnCall map[int]struct {
-		result1 *resource.SpaceQuota
+		result1 *capi.SpaceQuotaV3
 		result2 error
 	}
-	GetStub        func(context.Context, string) (*resource.SpaceQuota, error)
+	GetStub        func(context.Context, string) (*capi.SpaceQuotaV3, error)
 	getMutex       sync.RWMutex
 	getArgsForCall []struct {
 		arg1 context.Context
 		arg2 string
 	}
 	getReturns struct {
-		result1 *resource.SpaceQuota
+		result1 *capi.SpaceQuotaV3
 		result2 error
 	}
 	getReturnsOnCall map[int]struct {
-		result1 *resource.SpaceQuota
+		result1 *capi.SpaceQuotaV3
 		result2 error
 	}
-	ListAllStub        func(context.Context, *client.SpaceQuotaListOptions) ([]*resource.SpaceQuota, error)
+	ListAllStub        func(context.Context, *capi.QueryParams) ([]*capi.SpaceQuotaV3, error)
 	listAllMutex       sync.RWMutex
 	listAllArgsForCall []struct {
 		arg1 context.Context
-		arg2 *client.SpaceQuotaListOptions
+		arg2 *capi.QueryParams
 	}
 	listAllReturns struct {
-		result1 []*resource.SpaceQuota
+		result1 []*capi.SpaceQuotaV3
 		result2 error
 	}
 	listAllReturnsOnCall map[int]struct {
-		result1 []*resource.SpaceQuota
+		result1 []*capi.SpaceQuotaV3
 		result2 error
 	}
-	UpdateStub        func(context.Context, string, *resource.SpaceQuotaCreateOrUpdate) (*resource.SpaceQuota, error)
+	UpdateStub        func(context.Context, string, *capi.SpaceQuotaV3UpdateRequest) (*capi.SpaceQuotaV3, error)
 	updateMutex       sync.RWMutex
 	updateArgsForCall []struct {
 		arg1 context.Context
 		arg2 string
-		arg3 *resource.SpaceQuotaCreateOrUpdate
+		arg3 *capi.SpaceQuotaV3UpdateRequest
 	}
 	updateReturns struct {
-		result1 *resource.SpaceQuota
+		result1 *capi.SpaceQuotaV3
 		result2 error
 	}
 	updateReturnsOnCall map[int]struct {
-		result1 *resource.SpaceQuota
+		result1 *capi.SpaceQuotaV3
 		result2 error
 	}
 	invocations      map[string][][]interface{}
@@ -158,12 +157,12 @@ func (fake *FakeCFSpaceQuotaClient) ApplyReturnsOnCall(i int, result1 []string, 
 	}{result1, result2}
 }
 
-func (fake *FakeCFSpaceQuotaClient) Create(arg1 context.Context, arg2 *resource.SpaceQuotaCreateOrUpdate) (*resource.SpaceQuota, error) {
+func (fake *FakeCFSpaceQuotaClient) Create(arg1 context.Context, arg2 *capi.SpaceQuotaV3CreateRequest) (*capi.SpaceQuotaV3, error) {
 	fake.createMutex.Lock()
 	ret, specificReturn := fake.createReturnsOnCall[len(fake.createArgsForCall)]
 	fake.createArgsForCall = append(fake.createArgsForCall, struct {
 		arg1 context.Context
-		arg2 *resource.SpaceQuotaCreateOrUpdate
+		arg2 *capi.SpaceQuotaV3CreateRequest
 	}{arg1, arg2})
 	stub := fake.CreateStub
 	fakeReturns := fake.createReturns
@@ -184,46 +183,46 @@ func (fake *FakeCFSpaceQuotaClient) CreateCallCount() int {
 	return len(fake.createArgsForCall)
 }
 
-func (fake *FakeCFSpaceQuotaClient) CreateCalls(stub func(context.Context, *resource.SpaceQuotaCreateOrUpdate) (*resource.SpaceQuota, error)) {
+func (fake *FakeCFSpaceQuotaClient) CreateCalls(stub func(context.Context, *capi.SpaceQuotaV3CreateRequest) (*capi.SpaceQuotaV3, error)) {
 	fake.createMutex.Lock()
 	defer fake.createMutex.Unlock()
 	fake.CreateStub = stub
 }
 
-func (fake *FakeCFSpaceQuotaClient) CreateArgsForCall(i int) (context.Context, *resource.SpaceQuotaCreateOrUpdate) {
+func (fake *FakeCFSpaceQuotaClient) CreateArgsForCall(i int) (context.Context, *capi.SpaceQuotaV3CreateRequest) {
 	fake.createMutex.RLock()
 	defer fake.createMutex.RUnlock()
 	argsForCall := fake.createArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeCFSpaceQuotaClient) CreateReturns(result1 *resource.SpaceQuota, result2 error) {
+func (fake *FakeCFSpaceQuotaClient) CreateReturns(result1 *capi.SpaceQuotaV3, result2 error) {
 	fake.createMutex.Lock()
 	defer fake.createMutex.Unlock()
 	fake.CreateStub = nil
 	fake.createReturns = struct {
-		result1 *resource.SpaceQuota
+		result1 *capi.SpaceQuotaV3
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeCFSpaceQuotaClient) CreateReturnsOnCall(i int, result1 *resource.SpaceQuota, result2 error) {
+func (fake *FakeCFSpaceQuotaClient) CreateReturnsOnCall(i int, result1 *capi.SpaceQuotaV3, result2 error) {
 	fake.createMutex.Lock()
 	defer fake.createMutex.Unlock()
 	fake.CreateStub = nil
 	if fake.createReturnsOnCall == nil {
 		fake.createReturnsOnCall = make(map[int]struct {
-			result1 *resource.SpaceQuota
+			result1 *capi.SpaceQuotaV3
 			result2 error
 		})
 	}
 	fake.createReturnsOnCall[i] = struct {
-		result1 *resource.SpaceQuota
+		result1 *capi.SpaceQuotaV3
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeCFSpaceQuotaClient) Get(arg1 context.Context, arg2 string) (*resource.SpaceQuota, error) {
+func (fake *FakeCFSpaceQuotaClient) Get(arg1 context.Context, arg2 string) (*capi.SpaceQuotaV3, error) {
 	fake.getMutex.Lock()
 	ret, specificReturn := fake.getReturnsOnCall[len(fake.getArgsForCall)]
 	fake.getArgsForCall = append(fake.getArgsForCall, struct {
@@ -249,7 +248,7 @@ func (fake *FakeCFSpaceQuotaClient) GetCallCount() int {
 	return len(fake.getArgsForCall)
 }
 
-func (fake *FakeCFSpaceQuotaClient) GetCalls(stub func(context.Context, string) (*resource.SpaceQuota, error)) {
+func (fake *FakeCFSpaceQuotaClient) GetCalls(stub func(context.Context, string) (*capi.SpaceQuotaV3, error)) {
 	fake.getMutex.Lock()
 	defer fake.getMutex.Unlock()
 	fake.GetStub = stub
@@ -262,38 +261,38 @@ func (fake *FakeCFSpaceQuotaClient) GetArgsForCall(i int) (context.Context, stri
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeCFSpaceQuotaClient) GetReturns(result1 *resource.SpaceQuota, result2 error) {
+func (fake *FakeCFSpaceQuotaClient) GetReturns(result1 *capi.SpaceQuotaV3, result2 error) {
 	fake.getMutex.Lock()
 	defer fake.getMutex.Unlock()
 	fake.GetStub = nil
 	fake.getReturns = struct {
-		result1 *resource.SpaceQuota
+		result1 *capi.SpaceQuotaV3
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeCFSpaceQuotaClient) GetReturnsOnCall(i int, result1 *resource.SpaceQuota, result2 error) {
+func (fake *FakeCFSpaceQuotaClient) GetReturnsOnCall(i int, result1 *capi.SpaceQuotaV3, result2 error) {
 	fake.getMutex.Lock()
 	defer fake.getMutex.Unlock()
 	fake.GetStub = nil
 	if fake.getReturnsOnCall == nil {
 		fake.getReturnsOnCall = make(map[int]struct {
-			result1 *resource.SpaceQuota
+			result1 *capi.SpaceQuotaV3
 			result2 error
 		})
 	}
 	fake.getReturnsOnCall[i] = struct {
-		result1 *resource.SpaceQuota
+		result1 *capi.SpaceQuotaV3
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeCFSpaceQuotaClient) ListAll(arg1 context.Context, arg2 *client.SpaceQuotaListOptions) ([]*resource.SpaceQuota, error) {
+func (fake *FakeCFSpaceQuotaClient) ListAll(arg1 context.Context, arg2 *capi.QueryParams) ([]*capi.SpaceQuotaV3, error) {
 	fake.listAllMutex.Lock()
 	ret, specificReturn := fake.listAllReturnsOnCall[len(fake.listAllArgsForCall)]
 	fake.listAllArgsForCall = append(fake.listAllArgsForCall, struct {
 		arg1 context.Context
-		arg2 *client.SpaceQuotaListOptions
+		arg2 *capi.QueryParams
 	}{arg1, arg2})
 	stub := fake.ListAllStub
 	fakeReturns := fake.listAllReturns
@@ -314,52 +313,52 @@ func (fake *FakeCFSpaceQuotaClient) ListAllCallCount() int {
 	return len(fake.listAllArgsForCall)
 }
 
-func (fake *FakeCFSpaceQuotaClient) ListAllCalls(stub func(context.Context, *client.SpaceQuotaListOptions) ([]*resource.SpaceQuota, error)) {
+func (fake *FakeCFSpaceQuotaClient) ListAllCalls(stub func(context.Context, *capi.QueryParams) ([]*capi.SpaceQuotaV3, error)) {
 	fake.listAllMutex.Lock()
 	defer fake.listAllMutex.Unlock()
 	fake.ListAllStub = stub
 }
 
-func (fake *FakeCFSpaceQuotaClient) ListAllArgsForCall(i int) (context.Context, *client.SpaceQuotaListOptions) {
+func (fake *FakeCFSpaceQuotaClient) ListAllArgsForCall(i int) (context.Context, *capi.QueryParams) {
 	fake.listAllMutex.RLock()
 	defer fake.listAllMutex.RUnlock()
 	argsForCall := fake.listAllArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeCFSpaceQuotaClient) ListAllReturns(result1 []*resource.SpaceQuota, result2 error) {
+func (fake *FakeCFSpaceQuotaClient) ListAllReturns(result1 []*capi.SpaceQuotaV3, result2 error) {
 	fake.listAllMutex.Lock()
 	defer fake.listAllMutex.Unlock()
 	fake.ListAllStub = nil
 	fake.listAllReturns = struct {
-		result1 []*resource.SpaceQuota
+		result1 []*capi.SpaceQuotaV3
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeCFSpaceQuotaClient) ListAllReturnsOnCall(i int, result1 []*resource.SpaceQuota, result2 error) {
+func (fake *FakeCFSpaceQuotaClient) ListAllReturnsOnCall(i int, result1 []*capi.SpaceQuotaV3, result2 error) {
 	fake.listAllMutex.Lock()
 	defer fake.listAllMutex.Unlock()
 	fake.ListAllStub = nil
 	if fake.listAllReturnsOnCall == nil {
 		fake.listAllReturnsOnCall = make(map[int]struct {
-			result1 []*resource.SpaceQuota
+			result1 []*capi.SpaceQuotaV3
 			result2 error
 		})
 	}
 	fake.listAllReturnsOnCall[i] = struct {
-		result1 []*resource.SpaceQuota
+		result1 []*capi.SpaceQuotaV3
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeCFSpaceQuotaClient) Update(arg1 context.Context, arg2 string, arg3 *resource.SpaceQuotaCreateOrUpdate) (*resource.SpaceQuota, error) {
+func (fake *FakeCFSpaceQuotaClient) Update(arg1 context.Context, arg2 string, arg3 *capi.SpaceQuotaV3UpdateRequest) (*capi.SpaceQuotaV3, error) {
 	fake.updateMutex.Lock()
 	ret, specificReturn := fake.updateReturnsOnCall[len(fake.updateArgsForCall)]
 	fake.updateArgsForCall = append(fake.updateArgsForCall, struct {
 		arg1 context.Context
 		arg2 string
-		arg3 *resource.SpaceQuotaCreateOrUpdate
+		arg3 *capi.SpaceQuotaV3UpdateRequest
 	}{arg1, arg2, arg3})
 	stub := fake.UpdateStub
 	fakeReturns := fake.updateReturns
@@ -380,41 +379,41 @@ func (fake *FakeCFSpaceQuotaClient) UpdateCallCount() int {
 	return len(fake.updateArgsForCall)
 }
 
-func (fake *FakeCFSpaceQuotaClient) UpdateCalls(stub func(context.Context, string, *resource.SpaceQuotaCreateOrUpdate) (*resource.SpaceQuota, error)) {
+func (fake *FakeCFSpaceQuotaClient) UpdateCalls(stub func(context.Context, string, *capi.SpaceQuotaV3UpdateRequest) (*capi.SpaceQuotaV3, error)) {
 	fake.updateMutex.Lock()
 	defer fake.updateMutex.Unlock()
 	fake.UpdateStub = stub
 }
 
-func (fake *FakeCFSpaceQuotaClient) UpdateArgsForCall(i int) (context.Context, string, *resource.SpaceQuotaCreateOrUpdate) {
+func (fake *FakeCFSpaceQuotaClient) UpdateArgsForCall(i int) (context.Context, string, *capi.SpaceQuotaV3UpdateRequest) {
 	fake.updateMutex.RLock()
 	defer fake.updateMutex.RUnlock()
 	argsForCall := fake.updateArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeCFSpaceQuotaClient) UpdateReturns(result1 *resource.SpaceQuota, result2 error) {
+func (fake *FakeCFSpaceQuotaClient) UpdateReturns(result1 *capi.SpaceQuotaV3, result2 error) {
 	fake.updateMutex.Lock()
 	defer fake.updateMutex.Unlock()
 	fake.UpdateStub = nil
 	fake.updateReturns = struct {
-		result1 *resource.SpaceQuota
+		result1 *capi.SpaceQuotaV3
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeCFSpaceQuotaClient) UpdateReturnsOnCall(i int, result1 *resource.SpaceQuota, result2 error) {
+func (fake *FakeCFSpaceQuotaClient) UpdateReturnsOnCall(i int, result1 *capi.SpaceQuotaV3, result2 error) {
 	fake.updateMutex.Lock()
 	defer fake.updateMutex.Unlock()
 	fake.UpdateStub = nil
 	if fake.updateReturnsOnCall == nil {
 		fake.updateReturnsOnCall = make(map[int]struct {
-			result1 *resource.SpaceQuota
+			result1 *capi.SpaceQuotaV3
 			result2 error
 		})
 	}
 	fake.updateReturnsOnCall[i] = struct {
-		result1 *resource.SpaceQuota
+		result1 *capi.SpaceQuotaV3
 		result2 error
 	}{result1, result2}
 }
@@ -422,16 +421,6 @@ func (fake *FakeCFSpaceQuotaClient) UpdateReturnsOnCall(i int, result1 *resource
 func (fake *FakeCFSpaceQuotaClient) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.applyMutex.RLock()
-	defer fake.applyMutex.RUnlock()
-	fake.createMutex.RLock()
-	defer fake.createMutex.RUnlock()
-	fake.getMutex.RLock()
-	defer fake.getMutex.RUnlock()
-	fake.listAllMutex.RLock()
-	defer fake.listAllMutex.RUnlock()
-	fake.updateMutex.RLock()
-	defer fake.updateMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

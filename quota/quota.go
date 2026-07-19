@@ -7,8 +7,8 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/cloudfoundry-community/go-cfclient/v3/client"
 	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
+	"github.com/fivetwenty-io/capi/v3/pkg/capi"
 	"github.com/pkg/errors"
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
 	"github.com/vmwarepivotallabs/cf-mgmt/organizationreader"
@@ -41,7 +41,7 @@ type Manager struct {
 	SpaceMgr         space.Manager
 	OrgReader        organizationreader.Reader
 	Peek             bool
-	SpaceQuotas      map[string]map[string]*resource.SpaceQuota
+	SpaceQuotas      map[string]map[string]*capi.SpaceQuotaV3
 }
 
 // CreateSpaceQuotas -
@@ -106,17 +106,22 @@ func (m *Manager) CreateSpaceQuotas() error {
 	return nil
 }
 
-func (m *Manager) createSpaceQuota(input config.SpaceQuota, space *resource.Space, quotas map[string]*resource.SpaceQuota, orgQuotas map[string]*resource.OrganizationQuota) error {
+func (m *Manager) createSpaceQuota(input config.SpaceQuota, space *resource.Space, quotas map[string]*capi.SpaceQuotaV3, orgQuotas map[string]*capi.OrganizationQuota) error {
 
 	org, err := m.OrgReader.FindOrg(input.Org)
 	if err != nil {
 		return err
 	}
 
-	quota := resource.NewSpaceQuotaCreate(input.Name, org.GUID)
-	quota.Apps = &resource.SpaceQuotaApps{}
-	quota.Services = &resource.SpaceQuotaServices{}
-	quota.Routes = &resource.SpaceQuotaRoutes{}
+	quota := &capi.SpaceQuotaV3CreateRequest{
+		Name: input.Name,
+		Relationships: capi.SpaceQuotaRelationships{
+			Organization: capi.Relationship{Data: &capi.RelationshipData{GUID: org.GUID}},
+		},
+	}
+	quota.Apps = &capi.SpaceQuotaApps{}
+	quota.Services = &capi.SpaceQuotaServices{}
+	quota.Routes = &capi.SpaceQuotaRoutes{}
 
 	instanceMemoryLimit, err := config.ToMegabytes(input.InstanceMemoryLimit)
 	if err != nil {
@@ -199,7 +204,7 @@ func (m *Manager) createSpaceQuota(input config.SpaceQuota, space *resource.Spac
 	} else {
 		// create the quota already related to its space (the org relationship
 		// comes from NewSpaceQuotaCreate) so a separate apply call is not needed
-		quota.Relationships.Spaces = &resource.ToManyRelationships{Data: []resource.Relationship{{GUID: space.GUID}}}
+		quota.Relationships.Spaces = &capi.ToManyRelationship{Data: []capi.RelationshipData{{GUID: space.GUID}}}
 		createdQuota, err := m.CreateSpaceQuota(quota)
 		if err != nil {
 			return err
@@ -210,24 +215,17 @@ func (m *Manager) createSpaceQuota(input config.SpaceQuota, space *resource.Spac
 	return nil
 }
 
-func (m *Manager) hasSpaceQuotaChanged(quota *resource.SpaceQuota, newQuota *resource.SpaceQuotaCreateOrUpdate) bool {
-	existingAppQuota := quota.Apps
-	newAppQuota := newQuota.Apps
-	if !reflect.DeepEqual(existingAppQuota, *newAppQuota) {
-		m.debugCompareOutput("Apps Quota has changed from %s to %s", existingAppQuota, *newAppQuota)
+func (m *Manager) hasSpaceQuotaChanged(quota *capi.SpaceQuotaV3, newQuota *capi.SpaceQuotaV3CreateRequest) bool {
+	if !reflect.DeepEqual(quota.Apps, newQuota.Apps) {
+		m.debugCompareOutput("Apps Quota has changed from %s to %s", quota.Apps, newQuota.Apps)
 		return true
 	}
-	existingRoutesQuota := quota.Routes
-	newRoutesQuota := newQuota.Routes
-	if !reflect.DeepEqual(existingRoutesQuota, *newRoutesQuota) {
-		m.debugCompareOutput("Routes Quota has changed from %s to %s", existingRoutesQuota, *newRoutesQuota)
+	if !reflect.DeepEqual(quota.Routes, newQuota.Routes) {
+		m.debugCompareOutput("Routes Quota has changed from %s to %s", quota.Routes, newQuota.Routes)
 		return true
 	}
-
-	existingServicesQuota := quota.Services
-	newServicesQuota := newQuota.Services
-	if !reflect.DeepEqual(existingServicesQuota, *newServicesQuota) {
-		m.debugCompareOutput("Services Quota has changed from %s to %s", existingServicesQuota, *newServicesQuota)
+	if !reflect.DeepEqual(quota.Services, newQuota.Services) {
+		m.debugCompareOutput("Services Quota has changed from %s to %s", quota.Services, newQuota.Services)
 		return true
 	}
 	return false
@@ -239,26 +237,22 @@ func (m *Manager) debugCompareOutput(msg string, a interface{}, b interface{}) {
 	lo.G.Debugf(msg, string(aOutput), string(bOutput))
 }
 
-func (m *Manager) ListAllSpaceQuotasForOrg(orgGUID string) (map[string]*resource.SpaceQuota, error) {
+func (m *Manager) ListAllSpaceQuotasForOrg(orgGUID string) (map[string]*capi.SpaceQuotaV3, error) {
 	if m.Peek && strings.Contains(orgGUID, "dry-run-org-guid") {
-		return make(map[string]*resource.SpaceQuota), nil
+		return make(map[string]*capi.SpaceQuotaV3), nil
 	}
 	if m.SpaceQuotas == nil {
-		spaceQuotas, err := m.SpaceQuoteClient.ListAll(context.Background(), &client.SpaceQuotaListOptions{
-			ListOptions: &client.ListOptions{
-				PerPage: 5000,
-			},
-		})
+		spaceQuotas, err := m.SpaceQuoteClient.ListAll(context.Background(), nil)
 		if err != nil {
 			return nil, err
 		}
-		spaceQuotaMap := make(map[string]map[string]*resource.SpaceQuota)
+		spaceQuotaMap := make(map[string]map[string]*capi.SpaceQuotaV3)
 		for _, spaceQuota := range spaceQuotas {
 			orgGUID := spaceQuota.Relationships.Organization.Data.GUID
 			if orgSpaceQuotaMap, ok := spaceQuotaMap[orgGUID]; ok {
 				orgSpaceQuotaMap[spaceQuota.Name] = spaceQuota
 			} else {
-				orgSpaceQuotaMap := make(map[string]*resource.SpaceQuota)
+				orgSpaceQuotaMap := make(map[string]*capi.SpaceQuotaV3)
 				orgSpaceQuotaMap[spaceQuota.Name] = spaceQuota
 				spaceQuotaMap[orgGUID] = orgSpaceQuotaMap
 			}
@@ -267,24 +261,31 @@ func (m *Manager) ListAllSpaceQuotasForOrg(orgGUID string) (map[string]*resource
 	}
 	spaceQuotas := m.SpaceQuotas[orgGUID]
 	if spaceQuotas == nil {
-		spaceQuotas = make(map[string]*resource.SpaceQuota)
+		spaceQuotas = make(map[string]*capi.SpaceQuotaV3)
 	}
 	lo.G.Debug("Total space quotas returned :", len(spaceQuotas))
 	return spaceQuotas, nil
 }
 
-func (m *Manager) UpdateSpaceQuota(quotaGUID string, quota *resource.SpaceQuotaCreateOrUpdate) error {
+func (m *Manager) UpdateSpaceQuota(quotaGUID string, quota *capi.SpaceQuotaV3CreateRequest) error {
 	if m.Peek {
-		lo.G.Infof("[dry-run]: update space quota %s", *quota.Name)
+		lo.G.Infof("[dry-run]: update space quota %s", quota.Name)
 		return nil
 	}
-	lo.G.Infof("Updating space quota %s", *quota.Name)
-	quota.Relationships = nil
-	_, err := m.SpaceQuoteClient.Update(context.Background(), quotaGUID, quota)
+	lo.G.Infof("Updating space quota %s", quota.Name)
+	// the update request type carries no relationships, so an update can
+	// never clobber the quota's org/space assignments
+	update := &capi.SpaceQuotaV3UpdateRequest{
+		Name:     &quota.Name,
+		Apps:     quota.Apps,
+		Services: quota.Services,
+		Routes:   quota.Routes,
+	}
+	_, err := m.SpaceQuoteClient.Update(context.Background(), quotaGUID, update)
 	return err
 }
 
-func (m *Manager) AssignQuotaToSpace(space *resource.Space, quota *resource.SpaceQuota) error {
+func (m *Manager) AssignQuotaToSpace(space *resource.Space, quota *capi.SpaceQuotaV3) error {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: assigning quota %s to space %s", quota.Name, space.Name)
 		return nil
@@ -294,12 +295,12 @@ func (m *Manager) AssignQuotaToSpace(space *resource.Space, quota *resource.Spac
 	return err
 }
 
-func (m *Manager) CreateSpaceQuota(quota *resource.SpaceQuotaCreateOrUpdate) (*resource.SpaceQuota, error) {
+func (m *Manager) CreateSpaceQuota(quota *capi.SpaceQuotaV3CreateRequest) (*capi.SpaceQuotaV3, error) {
 	if m.Peek {
-		lo.G.Infof("[dry-run]: creating quota %s", *quota.Name)
-		return &resource.SpaceQuota{Name: "dry-run-quota", GUID: "dry-run-guid"}, nil
+		lo.G.Infof("[dry-run]: creating quota %s", quota.Name)
+		return &capi.SpaceQuotaV3{Name: "dry-run-quota", Resource: capi.Resource{GUID: "dry-run-guid"}}, nil
 	}
-	lo.G.Infof("Creating quota %s", *quota.Name)
+	lo.G.Infof("Creating quota %s", quota.Name)
 	spaceQuota, err := m.SpaceQuoteClient.Create(context.Background(), quota)
 	if err != nil {
 		return nil, err
@@ -357,14 +358,14 @@ func (m *Manager) CreateOrgQuotas() error {
 	return nil
 }
 
-func (m *Manager) createOrgQuota(input config.OrgQuota, quotas map[string]*resource.OrganizationQuota) error {
+func (m *Manager) createOrgQuota(input config.OrgQuota, quotas map[string]*capi.OrganizationQuota) error {
 
-	quota := &resource.OrganizationQuotaCreateOrUpdate{
-		Name:     &input.Name,
-		Apps:     &resource.OrganizationQuotaApps{},
-		Services: &resource.OrganizationQuotaServices{},
-		Routes:   &resource.OrganizationQuotaRoutes{},
-		Domains:  &resource.OrganizationQuotaDomains{},
+	quota := &capi.OrganizationQuotaCreateRequest{
+		Name:     input.Name,
+		Apps:     &capi.OrganizationQuotaApps{},
+		Services: &capi.OrganizationQuotaServices{},
+		Routes:   &capi.OrganizationQuotaRoutes{},
+		Domains:  &capi.OrganizationQuotaDomains{},
 	}
 	memoryLimit, err := config.ToMegabytes(input.MemoryLimit)
 	if err != nil {
@@ -445,43 +446,29 @@ func (m *Manager) createOrgQuota(input config.OrgQuota, quotas map[string]*resou
 	return nil
 }
 
-func (m *Manager) hasOrgQuotaChanged(quota *resource.OrganizationQuota, newQuota *resource.OrganizationQuotaCreateOrUpdate) bool {
-	existingAppQuota := quota.Apps
-	newAppQuota := newQuota.Apps
-	if !reflect.DeepEqual(existingAppQuota, *newAppQuota) {
-		m.debugCompareOutput("Apps Quota has changed from %s to %s", existingAppQuota, *newAppQuota)
+func (m *Manager) hasOrgQuotaChanged(quota *capi.OrganizationQuota, newQuota *capi.OrganizationQuotaCreateRequest) bool {
+	if !reflect.DeepEqual(quota.Apps, newQuota.Apps) {
+		m.debugCompareOutput("Apps Quota has changed from %s to %s", quota.Apps, newQuota.Apps)
 		return true
 	}
-	existingRoutesQuota := quota.Routes
-	newRoutesQuota := newQuota.Routes
-	if !reflect.DeepEqual(existingRoutesQuota, *newRoutesQuota) {
-		m.debugCompareOutput("Routes Quota has changed from %s to %s", existingRoutesQuota, *newRoutesQuota)
+	if !reflect.DeepEqual(quota.Routes, newQuota.Routes) {
+		m.debugCompareOutput("Routes Quota has changed from %s to %s", quota.Routes, newQuota.Routes)
 		return true
 	}
-
-	existingServicesQuota := quota.Services
-	newServicesQuota := newQuota.Services
-	if !reflect.DeepEqual(existingServicesQuota, *newServicesQuota) {
-		m.debugCompareOutput("Services Quota has changed from %s to %s", existingServicesQuota, *newServicesQuota)
+	if !reflect.DeepEqual(quota.Services, newQuota.Services) {
+		m.debugCompareOutput("Services Quota has changed from %s to %s", quota.Services, newQuota.Services)
 		return true
 	}
-
-	existingDomainsQuota := quota.Domains
-	newDomainsQuota := newQuota.Domains
-	if !reflect.DeepEqual(existingDomainsQuota, *newDomainsQuota) {
-		m.debugCompareOutput("Domains Quota has changed from %s to %s", existingDomainsQuota, *newDomainsQuota)
+	if !reflect.DeepEqual(quota.Domains, newQuota.Domains) {
+		m.debugCompareOutput("Domains Quota has changed from %s to %s", quota.Domains, newQuota.Domains)
 		return true
 	}
 	return false
 }
 
-func (m *Manager) ListAllOrgQuotas() (map[string]*resource.OrganizationQuota, error) {
-	quotas := make(map[string]*resource.OrganizationQuota)
-	orgQutotas, err := m.OrgQuoteClient.ListAll(context.Background(), &client.OrganizationQuotaListOptions{
-		ListOptions: &client.ListOptions{
-			PerPage: 5000,
-		},
-	})
+func (m *Manager) ListAllOrgQuotas() (map[string]*capi.OrganizationQuota, error) {
+	quotas := make(map[string]*capi.OrganizationQuota)
+	orgQutotas, err := m.OrgQuoteClient.ListAll(context.Background(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -492,13 +479,13 @@ func (m *Manager) ListAllOrgQuotas() (map[string]*resource.OrganizationQuota, er
 	return quotas, nil
 }
 
-func (m *Manager) CreateOrgQuota(quota *resource.OrganizationQuotaCreateOrUpdate) (*resource.OrganizationQuota, error) {
+func (m *Manager) CreateOrgQuota(quota *capi.OrganizationQuotaCreateRequest) (*capi.OrganizationQuota, error) {
 	if m.Peek {
-		lo.G.Infof("[dry-run]: create org quota %s", *quota.Name)
-		return &resource.OrganizationQuota{Name: "dry-run-quota", GUID: "dry-run-quota-guid"}, nil
+		lo.G.Infof("[dry-run]: create org quota %s", quota.Name)
+		return &capi.OrganizationQuota{Name: "dry-run-quota", Resource: capi.Resource{GUID: "dry-run-quota-guid"}}, nil
 	}
 
-	lo.G.Infof("Creating org quota %s", *quota.Name)
+	lo.G.Infof("Creating org quota %s", quota.Name)
 	orgQuota, err := m.OrgQuoteClient.Create(context.Background(), quota)
 	if err != nil {
 		return nil, err
@@ -506,17 +493,24 @@ func (m *Manager) CreateOrgQuota(quota *resource.OrganizationQuotaCreateOrUpdate
 	return orgQuota, nil
 }
 
-func (m *Manager) UpdateOrgQuota(quotaGUID string, quota *resource.OrganizationQuotaCreateOrUpdate) error {
+func (m *Manager) UpdateOrgQuota(quotaGUID string, quota *capi.OrganizationQuotaCreateRequest) error {
 	if m.Peek {
-		lo.G.Infof("[dry-run]: update org quota %s", *quota.Name)
+		lo.G.Infof("[dry-run]: update org quota %s", quota.Name)
 		return nil
 	}
-	lo.G.Infof("Updating org quota %s", *quota.Name)
-	_, err := m.OrgQuoteClient.Update(context.Background(), quotaGUID, quota)
+	lo.G.Infof("Updating org quota %s", quota.Name)
+	update := &capi.OrganizationQuotaUpdateRequest{
+		Name:     &quota.Name,
+		Apps:     quota.Apps,
+		Services: quota.Services,
+		Routes:   quota.Routes,
+		Domains:  quota.Domains,
+	}
+	_, err := m.OrgQuoteClient.Update(context.Background(), quotaGUID, update)
 	return err
 }
 
-func (m *Manager) AssignQuotaToOrg(org *resource.Organization, quota *resource.OrganizationQuota) error {
+func (m *Manager) AssignQuotaToOrg(org *resource.Organization, quota *capi.OrganizationQuota) error {
 	if m.Peek {
 		lo.G.Infof("[dry-run]: assign quota %s to org %s", quota.Name, org.Name)
 		return nil
@@ -526,10 +520,10 @@ func (m *Manager) AssignQuotaToOrg(org *resource.Organization, quota *resource.O
 	return err
 }
 
-func (m *Manager) GetSpaceQuota(guid string) (*resource.SpaceQuota, error) {
+func (m *Manager) GetSpaceQuota(guid string) (*capi.SpaceQuotaV3, error) {
 	return m.SpaceQuoteClient.Get(context.Background(), guid)
 }
 
-func (m *Manager) GetOrgQuota(guid string) (*resource.OrganizationQuota, error) {
+func (m *Manager) GetOrgQuota(guid string) (*capi.OrganizationQuota, error) {
 	return m.OrgQuoteClient.Get(context.Background(), guid)
 }

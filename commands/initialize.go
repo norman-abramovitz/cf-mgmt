@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"net/http"
@@ -12,7 +13,10 @@ import (
 	"github.com/cloudfoundry-community/go-cfclient"
 	v3cfclient "github.com/cloudfoundry-community/go-cfclient/v3/client"
 	v3config "github.com/cloudfoundry-community/go-cfclient/v3/config"
+	"github.com/fivetwenty-io/capi/v3/pkg/capi"
+	capicf "github.com/fivetwenty-io/capi/v3/pkg/cfclient"
 
+	"github.com/vmwarepivotallabs/cf-mgmt/capiclient"
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
 	"github.com/vmwarepivotallabs/cf-mgmt/configcommands"
 	"github.com/vmwarepivotallabs/cf-mgmt/isosegment"
@@ -159,6 +163,28 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool, ldapMgr 
 		return nil, err
 	}
 
+	capiConfig := &capi.Config{
+		APIEndpoint:   fmt.Sprintf("https://api.%s", cfMgmt.SystemDomain),
+		UserAgent:     userAgent,
+		SkipTLSVerify: true,
+		HTTPTimeout:   time.Minute,
+	}
+	if baseCommand.Password != "" {
+		capiConfig.Username = baseCommand.UserID
+		capiConfig.Password = baseCommand.Password
+	} else {
+		capiConfig.ClientID = baseCommand.UserID
+		capiConfig.ClientSecret = baseCommand.ClientSecret
+	}
+	// the capi client only honors SkipTLSVerify in explicit dev mode;
+	// cf-mgmt has always skipped TLS verification, so preserve that until
+	// a skip-ssl-validation flag exists
+	os.Setenv("CAPI_DEV_MODE", "true")
+	capiClient, err := capicf.New(context.Background(), capiConfig)
+	if err != nil {
+		return nil, err
+	}
+
 	cfMgmt.OrgReader = organizationreader.NewReader(client, v3client.Organizations, cfg, peek)
 	cfMgmt.SpaceManager = space.NewManager(v3client.Spaces, v3client.SpaceFeatures, cfMgmt.UAAManager, cfMgmt.OrgReader, cfg, peek)
 	cfMgmt.OrgManager = organization.NewManager(v3client.Organizations, cfMgmt.OrgReader, cfg, peek)
@@ -170,7 +196,7 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool, ldapMgr 
 	}
 	cfMgmt.UserManager = userManager
 	cfMgmt.SecurityGroupManager = securitygroup.NewManager(v3client.SecurityGroups, cfMgmt.SpaceManager, cfg, peek)
-	cfMgmt.QuotaManager = quota.NewManager(v3client.SpaceQuotas, v3client.OrganizationQuotas, cfMgmt.SpaceManager, cfMgmt.OrgReader, cfg, peek)
+	cfMgmt.QuotaManager = quota.NewManager(capiclient.NewSpaceQuotas(capiClient), capiclient.NewOrgQuotas(capiClient), cfMgmt.SpaceManager, cfMgmt.OrgReader, cfg, peek)
 	cfMgmt.PrivateDomainManager = privatedomain.NewManager(client, cfMgmt.OrgReader, cfg, peek)
 	if isoSegmentManager, err := isosegment.NewManager(client, cfg, cfMgmt.OrgReader, cfMgmt.SpaceManager, peek); err == nil {
 		cfMgmt.IsolationSegmentManager = isoSegmentManager
