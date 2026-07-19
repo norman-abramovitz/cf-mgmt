@@ -199,7 +199,7 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool, ldapMgr 
 		return nil, err
 	}
 	cfMgmt.UserManager = userManager
-	cfMgmt.SecurityGroupManager = securitygroup.NewManager(v3client.SecurityGroups, cfMgmt.SpaceManager, cfg, peek)
+	cfMgmt.SecurityGroupManager = securitygroup.NewManager(capiclient.NewSecurityGroups(capiClient), cfMgmt.SpaceManager, cfg, peek)
 	cfMgmt.QuotaManager = quota.NewManager(capiclient.NewSpaceQuotas(capiClient), capiclient.NewOrgQuotas(capiClient), cfMgmt.SpaceManager, cfMgmt.OrgReader, cfg, peek)
 	cfMgmt.PrivateDomainManager = privatedomain.NewManager(client, cfMgmt.OrgReader, cfg, peek)
 	if isoSegmentManager, err := isosegment.NewManager(client, cfg, cfMgmt.OrgReader, cfMgmt.SpaceManager, peek); err == nil {

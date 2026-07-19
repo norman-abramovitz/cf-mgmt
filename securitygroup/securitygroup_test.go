@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
+	"github.com/fivetwenty-io/capi/v3/pkg/capi"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -71,19 +72,19 @@ var _ = Describe("given Security Group Manager", func() {
 	})
 	Context("ListNonDefaultSecurityGroups", func() {
 		It("returns 2 security groups", func() {
-			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+			fakeClient.ListAllReturns([]*capi.SecurityGroup{
 				{
-					Name: "group1",
-					GUID: "group1-guid",
-					GloballyEnabled: resource.SecurityGroupGloballyEnabled{
+					Name:     "group1",
+					Resource: capi.Resource{GUID: "group1-guid"},
+					GloballyEnabled: capi.SecurityGroupGloballyEnabled{
 						Running: false,
 						Staging: false,
 					},
 				},
 				{
-					Name: "group2",
-					GUID: "group2-guid",
-					GloballyEnabled: resource.SecurityGroupGloballyEnabled{
+					Name:     "group2",
+					Resource: capi.Resource{GUID: "group2-guid"},
+					GloballyEnabled: capi.SecurityGroupGloballyEnabled{
 						Running: false,
 						Staging: false,
 					},
@@ -104,19 +105,19 @@ var _ = Describe("given Security Group Manager", func() {
 
 	Context("ListDefaultSecurityGroups", func() {
 		It("returns 2 security groups", func() {
-			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+			fakeClient.ListAllReturns([]*capi.SecurityGroup{
 				{
-					Name: "group1",
-					GUID: "group1-guid",
-					GloballyEnabled: resource.SecurityGroupGloballyEnabled{
+					Name:     "group1",
+					Resource: capi.Resource{GUID: "group1-guid"},
+					GloballyEnabled: capi.SecurityGroupGloballyEnabled{
 						Running: true,
 						Staging: false,
 					},
 				},
 				{
-					Name: "group2",
-					GUID: "group2-guid",
-					GloballyEnabled: resource.SecurityGroupGloballyEnabled{
+					Name:     "group2",
+					Resource: capi.Resource{GUID: "group2-guid"},
+					GloballyEnabled: capi.SecurityGroupGloballyEnabled{
 						Running: false,
 						Staging: true,
 					},
@@ -177,10 +178,10 @@ var _ = Describe("given Security Group Manager", func() {
 				},
 			}
 			fakeReader.GetSpaceConfigsReturns(spaceConfigs, nil)
-			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+			fakeClient.ListAllReturns([]*capi.SecurityGroup{
 				{
-					Name: "dns",
-					GUID: "dns-guid",
+					Name:     "dns",
+					Resource: capi.Resource{GUID: "dns-guid"},
 				},
 			}, nil)
 			err := securityMgr.CreateApplicationSecurityGroups()
@@ -201,16 +202,16 @@ var _ = Describe("given Security Group Manager", func() {
 				},
 			}
 			fakeReader.GetSpaceConfigsReturns(spaceConfigs, nil)
-			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+			fakeClient.ListAllReturns([]*capi.SecurityGroup{
 				{
-					Name: "dns",
-					GUID: "dns-guid",
+					Name:     "dns",
+					Resource: capi.Resource{GUID: "dns-guid"},
 				},
 			}, nil)
-			fakeClient.ListRunningForSpaceAllReturns([]*resource.SecurityGroup{
+			fakeClient.ListRunningForSpaceAllReturns([]*capi.SecurityGroup{
 				{
-					Name: "dns",
-					GUID: "dns-guid",
+					Name:     "dns",
+					Resource: capi.Resource{GUID: "dns-guid"},
 				},
 			}, nil)
 			err := securityMgr.CreateApplicationSecurityGroups()
@@ -230,38 +231,38 @@ var _ = Describe("given Security Group Manager", func() {
 				},
 			}
 			fakeReader.GetSpaceConfigsReturns(spaceConfigs, nil)
-			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+			fakeClient.ListAllReturns([]*capi.SecurityGroup{
 				{
-					Name: "dns",
-					GUID: "dns-guid",
-					Relationships: resource.SecurityGroupsRelationships{
-						RunningSpaces: resource.ToManyRelationships{
-							Data: []resource.Relationship{
+					Name:     "dns",
+					Resource: capi.Resource{GUID: "dns-guid"},
+					Relationships: capi.SecurityGroupRelationships{
+						RunningSpaces: capi.ToManyRelationship{
+							Data: []capi.RelationshipData{
 								{GUID: "space1-guid"},
 							},
 						},
 					},
 				},
 				{
-					Name: "ntp",
-					GUID: "ntp-guid",
-					Relationships: resource.SecurityGroupsRelationships{
-						RunningSpaces: resource.ToManyRelationships{
-							Data: []resource.Relationship{
+					Name:     "ntp",
+					Resource: capi.Resource{GUID: "ntp-guid"},
+					Relationships: capi.SecurityGroupRelationships{
+						RunningSpaces: capi.ToManyRelationship{
+							Data: []capi.RelationshipData{
 								{GUID: "space1-guid"},
 							},
 						},
 					},
 				},
 			}, nil)
-			fakeClient.ListRunningForSpaceAllReturns([]*resource.SecurityGroup{
+			fakeClient.ListRunningForSpaceAllReturns([]*capi.SecurityGroup{
 				{
-					Name: "dns",
-					GUID: "dns-guid",
+					Name:     "dns",
+					Resource: capi.Resource{GUID: "dns-guid"},
 				},
 				{
-					Name: "ntp",
-					GUID: "ntp-guid",
+					Name:     "ntp",
+					Resource: capi.Resource{GUID: "ntp-guid"},
 				},
 			}, nil)
 			err := securityMgr.CreateApplicationSecurityGroups()
@@ -285,26 +286,26 @@ var _ = Describe("given Security Group Manager", func() {
 				},
 			}
 			fakeReader.GetSpaceConfigsReturns(spaceConfigs, nil)
-			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+			fakeClient.ListAllReturns([]*capi.SecurityGroup{
 				{
-					Name: "dns",
-					GUID: "dns-guid",
+					Name:     "dns",
+					Resource: capi.Resource{GUID: "dns-guid"},
 				},
 				{
-					Name:  "org1-space1",
-					GUID:  "org1-space1-guid",
-					Rules: []resource.SecurityGroupRule{},
+					Name:     "org1-space1",
+					Resource: capi.Resource{GUID: "org1-space1-guid"},
+					Rules:    []capi.SecurityGroupRule{},
 				},
 			}, nil)
-			fakeClient.ListRunningForSpaceAllReturns([]*resource.SecurityGroup{
+			fakeClient.ListRunningForSpaceAllReturns([]*capi.SecurityGroup{
 				{
-					Name: "dns",
-					GUID: "dns-guid",
+					Name:     "dns",
+					Resource: capi.Resource{GUID: "dns-guid"},
 				},
 				{
-					Name:  "org1-space1",
-					GUID:  "org1-space1-guid",
-					Rules: []resource.SecurityGroupRule{},
+					Name:     "org1-space1",
+					Resource: capi.Resource{GUID: "org1-space1-guid"},
+					Rules:    []capi.SecurityGroupRule{},
 				},
 			}, nil)
 			err := securityMgr.CreateApplicationSecurityGroups()
@@ -325,39 +326,39 @@ var _ = Describe("given Security Group Manager", func() {
 				},
 			}
 			fakeReader.GetSpaceConfigsReturns(spaceConfigs, nil)
-			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+			fakeClient.ListAllReturns([]*capi.SecurityGroup{
 				{
-					Name:  "skip-this-asg-prefix-example",
-					GUID:  "skip-this-asg-prefix-example-guid",
-					Rules: []resource.SecurityGroupRule{},
-					Relationships: resource.SecurityGroupsRelationships{
-						StagingSpaces: resource.ToManyRelationships{
-							Data: []resource.Relationship{
-								resource.Relationship{GUID: "space1-guid"},
+					Name:     "skip-this-asg-prefix-example",
+					Resource: capi.Resource{GUID: "skip-this-asg-prefix-example-guid"},
+					Rules:    []capi.SecurityGroupRule{},
+					Relationships: capi.SecurityGroupRelationships{
+						StagingSpaces: capi.ToManyRelationship{
+							Data: []capi.RelationshipData{
+								capi.RelationshipData{GUID: "space1-guid"},
 							},
 						},
-						RunningSpaces: resource.ToManyRelationships{
-							Data: []resource.Relationship{
-								resource.Relationship{GUID: "space1-guid"},
+						RunningSpaces: capi.ToManyRelationship{
+							Data: []capi.RelationshipData{
+								capi.RelationshipData{GUID: "space1-guid"},
 							},
 						},
 					},
 				},
 			}, nil)
-			fakeClient.ListRunningForSpaceAllReturns([]*resource.SecurityGroup{
+			fakeClient.ListRunningForSpaceAllReturns([]*capi.SecurityGroup{
 				{
-					Name:  "skip-this-asg-prefix-example",
-					GUID:  "skip-this-asg-prefix-example-guid",
-					Rules: []resource.SecurityGroupRule{},
-					Relationships: resource.SecurityGroupsRelationships{
-						StagingSpaces: resource.ToManyRelationships{
-							Data: []resource.Relationship{
-								resource.Relationship{GUID: "space1-guid"},
+					Name:     "skip-this-asg-prefix-example",
+					Resource: capi.Resource{GUID: "skip-this-asg-prefix-example-guid"},
+					Rules:    []capi.SecurityGroupRule{},
+					Relationships: capi.SecurityGroupRelationships{
+						StagingSpaces: capi.ToManyRelationship{
+							Data: []capi.RelationshipData{
+								capi.RelationshipData{GUID: "space1-guid"},
 							},
 						},
-						RunningSpaces: resource.ToManyRelationships{
-							Data: []resource.Relationship{
-								resource.Relationship{GUID: "space1-guid"},
+						RunningSpaces: capi.ToManyRelationship{
+							Data: []capi.RelationshipData{
+								capi.RelationshipData{GUID: "space1-guid"},
 							},
 						},
 					},
@@ -381,40 +382,40 @@ var _ = Describe("given Security Group Manager", func() {
 				},
 			}
 			fakeReader.GetSpaceConfigsReturns(spaceConfigs, nil)
-			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+			fakeClient.ListAllReturns([]*capi.SecurityGroup{
 				{
-					Name: "dns",
-					GUID: "dns-guid",
-					Relationships: resource.SecurityGroupsRelationships{
-						RunningSpaces: resource.ToManyRelationships{
-							Data: []resource.Relationship{
+					Name:     "dns",
+					Resource: capi.Resource{GUID: "dns-guid"},
+					Relationships: capi.SecurityGroupRelationships{
+						RunningSpaces: capi.ToManyRelationship{
+							Data: []capi.RelationshipData{
 								{GUID: "space1-guid"},
 							},
 						},
 					},
 				},
 				{
-					Name:  "org1-space1",
-					GUID:  "org1-space1-guid",
-					Rules: []resource.SecurityGroupRule{},
-					Relationships: resource.SecurityGroupsRelationships{
-						RunningSpaces: resource.ToManyRelationships{
-							Data: []resource.Relationship{
+					Name:     "org1-space1",
+					Resource: capi.Resource{GUID: "org1-space1-guid"},
+					Rules:    []capi.SecurityGroupRule{},
+					Relationships: capi.SecurityGroupRelationships{
+						RunningSpaces: capi.ToManyRelationship{
+							Data: []capi.RelationshipData{
 								{GUID: "space1-guid"},
 							},
 						},
 					},
 				},
 			}, nil)
-			fakeClient.ListRunningForSpaceAllReturns([]*resource.SecurityGroup{
+			fakeClient.ListRunningForSpaceAllReturns([]*capi.SecurityGroup{
 				{
-					Name: "dns",
-					GUID: "dns-guid",
+					Name:     "dns",
+					Resource: capi.Resource{GUID: "dns-guid"},
 				},
 				{
-					Name:  "org1-space1",
-					GUID:  "org1-space1-guid",
-					Rules: []resource.SecurityGroupRule{},
+					Name:     "org1-space1",
+					Resource: capi.Resource{GUID: "org1-space1-guid"},
+					Rules:    []capi.SecurityGroupRule{},
 				},
 			}, nil)
 			err := securityMgr.CreateApplicationSecurityGroups()
@@ -434,10 +435,10 @@ var _ = Describe("given Security Group Manager", func() {
 				},
 			}
 			fakeReader.GetSpaceConfigsReturns(spaceConfigs, nil)
-			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+			fakeClient.ListAllReturns([]*capi.SecurityGroup{
 				{
-					Name: "dns",
-					GUID: "dns-guid",
+					Name:     "dns",
+					Resource: capi.Resource{GUID: "dns-guid"},
 				},
 			}, nil)
 			fakeClient.BindRunningSecurityGroupReturns(nil, errors.New("error"))
@@ -464,7 +465,7 @@ var _ = Describe("given Security Group Manager", func() {
 
 		It("Should create and assign group to space", func() {
 			fakeClient.ListAllReturns(nil, nil)
-			fakeClient.CreateReturns(&resource.SecurityGroup{Name: "org1-space1", GUID: "org1-space1-guid"}, nil)
+			fakeClient.CreateReturns(&capi.SecurityGroup{Name: "org1-space1", Resource: capi.Resource{GUID: "org1-space1-guid"}}, nil)
 			err := securityMgr.CreateApplicationSecurityGroups()
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(fakeClient.CreateCallCount()).Should(Equal(1))
@@ -475,11 +476,11 @@ var _ = Describe("given Security Group Manager", func() {
 		})
 
 		It("Should update and assign group to space", func() {
-			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+			fakeClient.ListAllReturns([]*capi.SecurityGroup{
 				{
-					Name: "org1-space1",
-					GUID: "org1-space1-guid",
-					GloballyEnabled: resource.SecurityGroupGloballyEnabled{
+					Name:     "org1-space1",
+					Resource: capi.Resource{GUID: "org1-space1-guid"},
+					GloballyEnabled: capi.SecurityGroupGloballyEnabled{
 						Running: false,
 						Staging: false,
 					},
@@ -495,17 +496,17 @@ var _ = Describe("given Security Group Manager", func() {
 		})
 
 		It("Should update and not assign group to space", func() {
-			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+			fakeClient.ListAllReturns([]*capi.SecurityGroup{
 				{
-					Name: "org1-space1",
-					GUID: "org1-space1-guid",
-					GloballyEnabled: resource.SecurityGroupGloballyEnabled{
+					Name:     "org1-space1",
+					Resource: capi.Resource{GUID: "org1-space1-guid"},
+					GloballyEnabled: capi.SecurityGroupGloballyEnabled{
 						Running: false,
 						Staging: false,
 					},
-					Relationships: resource.SecurityGroupsRelationships{
-						RunningSpaces: resource.ToManyRelationships{
-							Data: []resource.Relationship{
+					Relationships: capi.SecurityGroupRelationships{
+						RunningSpaces: capi.ToManyRelationship{
+							Data: []capi.RelationshipData{
 								{GUID: "space1-guid"},
 								{GUID: "space2-guid"},
 							},
@@ -522,7 +523,7 @@ var _ = Describe("given Security Group Manager", func() {
 		It("Should not create and not assign group to space", func() {
 			securityMgr.Peek = true
 			fakeClient.ListAllReturns(nil, nil)
-			fakeClient.CreateReturns(&resource.SecurityGroup{Name: "org1-space1", GUID: "org1-space1-guid"}, nil)
+			fakeClient.CreateReturns(&capi.SecurityGroup{Name: "org1-space1", Resource: capi.Resource{GUID: "org1-space1-guid"}}, nil)
 			err := securityMgr.CreateApplicationSecurityGroups()
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(fakeClient.CreateCallCount()).Should(Equal(0))
@@ -531,11 +532,11 @@ var _ = Describe("given Security Group Manager", func() {
 
 		It("Should not update and not assign group to space", func() {
 			securityMgr.Peek = true
-			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+			fakeClient.ListAllReturns([]*capi.SecurityGroup{
 				{
-					Name: "org1-space1",
-					GUID: "org1-space1-guid",
-					GloballyEnabled: resource.SecurityGroupGloballyEnabled{
+					Name:     "org1-space1",
+					Resource: capi.Resource{GUID: "org1-space1-guid"},
+					GloballyEnabled: capi.SecurityGroupGloballyEnabled{
 						Running: false,
 						Staging: false,
 					},
@@ -599,11 +600,11 @@ var _ = Describe("given Security Group Manager", func() {
 					Rules: asg_config,
 				},
 			}
-			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+			fakeClient.ListAllReturns([]*capi.SecurityGroup{
 				{
-					Name:  "asg-1",
-					GUID:  "asg-1-guid",
-					Rules: []resource.SecurityGroupRule{},
+					Name:     "asg-1",
+					Resource: capi.Resource{GUID: "asg-1-guid"},
+					Rules:    []capi.SecurityGroupRule{},
 				},
 			}, nil)
 			fakeReader.GetASGConfigsReturns(asgConfigs, nil)
@@ -619,14 +620,14 @@ var _ = Describe("given Security Group Manager", func() {
 					Rules: asg_config,
 				},
 			}
-			securityGroupRules := []resource.SecurityGroupRule{}
+			securityGroupRules := []capi.SecurityGroupRule{}
 			err := json.Unmarshal([]byte(asg_config), &securityGroupRules)
 			Expect(err).ShouldNot(HaveOccurred())
-			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+			fakeClient.ListAllReturns([]*capi.SecurityGroup{
 				{
-					Name:  "asg-1",
-					GUID:  "asg-1-guid",
-					Rules: securityGroupRules,
+					Name:     "asg-1",
+					Resource: capi.Resource{GUID: "asg-1-guid"},
+					Rules:    securityGroupRules,
 				},
 			}, nil)
 			fakeReader.GetASGConfigsReturns(asgConfigs, nil)
@@ -656,11 +657,11 @@ var _ = Describe("given Security Group Manager", func() {
 					Rules: asg_config,
 				},
 			}
-			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+			fakeClient.ListAllReturns([]*capi.SecurityGroup{
 				{
-					Name:  "asg-1",
-					GUID:  "asg-1-guid",
-					Rules: []resource.SecurityGroupRule{},
+					Name:     "asg-1",
+					Resource: capi.Resource{GUID: "asg-1-guid"},
+					Rules:    []capi.SecurityGroupRule{},
 				},
 			}, nil)
 			fakeClient.UpdateReturns(nil, errors.New("error"))
@@ -677,11 +678,11 @@ var _ = Describe("given Security Group Manager", func() {
 					Rules: asg_config,
 				},
 			}
-			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+			fakeClient.ListAllReturns([]*capi.SecurityGroup{
 				{
-					Name:  "asg-1",
-					GUID:  "asg-1-guid",
-					Rules: []resource.SecurityGroupRule{},
+					Name:     "asg-1",
+					Resource: capi.Resource{GUID: "asg-1-guid"},
+					Rules:    []capi.SecurityGroupRule{},
 				},
 			}, nil)
 			fakeClient.UpdateReturns(nil, errors.New("error"))
@@ -744,11 +745,11 @@ var _ = Describe("given Security Group Manager", func() {
 
 	Context("AssignDefaultSecurityGroups", func() {
 		It("should assign running security group", func() {
-			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+			fakeClient.ListAllReturns([]*capi.SecurityGroup{
 				{
-					Name:  "asg-1",
-					GUID:  "asg-1-guid",
-					Rules: []resource.SecurityGroupRule{},
+					Name:     "asg-1",
+					Resource: capi.Resource{GUID: "asg-1-guid"},
+					Rules:    []capi.SecurityGroupRule{},
 				},
 			}, nil)
 			fakeReader.GetGlobalConfigReturns(&config.GlobalConfig{
@@ -763,15 +764,15 @@ var _ = Describe("given Security Group Manager", func() {
 		})
 
 		It("should not assign running security group", func() {
-			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+			fakeClient.ListAllReturns([]*capi.SecurityGroup{
 				{
-					Name: "asg-1",
-					GUID: "asg-1-guid",
-					GloballyEnabled: resource.SecurityGroupGloballyEnabled{
+					Name:     "asg-1",
+					Resource: capi.Resource{GUID: "asg-1-guid"},
+					GloballyEnabled: capi.SecurityGroupGloballyEnabled{
 						Running: true,
 						Staging: false,
 					},
-					Rules: []resource.SecurityGroupRule{},
+					Rules: []capi.SecurityGroupRule{},
 				},
 			}, nil)
 			fakeReader.GetGlobalConfigReturns(&config.GlobalConfig{
@@ -783,7 +784,7 @@ var _ = Describe("given Security Group Manager", func() {
 		})
 
 		It("should error since group doesn't exist", func() {
-			fakeClient.ListAllReturns([]*resource.SecurityGroup{}, nil)
+			fakeClient.ListAllReturns([]*capi.SecurityGroup{}, nil)
 			fakeReader.GetGlobalConfigReturns(&config.GlobalConfig{
 				RunningSecurityGroups: []string{"asg-1"},
 			}, nil)
@@ -793,11 +794,11 @@ var _ = Describe("given Security Group Manager", func() {
 		})
 
 		It("should assign running staging group", func() {
-			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+			fakeClient.ListAllReturns([]*capi.SecurityGroup{
 				{
-					Name:  "asg-1",
-					GUID:  "asg-1-guid",
-					Rules: []resource.SecurityGroupRule{},
+					Name:     "asg-1",
+					Resource: capi.Resource{GUID: "asg-1-guid"},
+					Rules:    []capi.SecurityGroupRule{},
 				},
 			}, nil)
 			fakeReader.GetGlobalConfigReturns(&config.GlobalConfig{
@@ -812,15 +813,15 @@ var _ = Describe("given Security Group Manager", func() {
 		})
 
 		It("should not assign staging security group", func() {
-			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+			fakeClient.ListAllReturns([]*capi.SecurityGroup{
 				{
-					Name: "asg-1",
-					GUID: "asg-1-guid",
-					GloballyEnabled: resource.SecurityGroupGloballyEnabled{
+					Name:     "asg-1",
+					Resource: capi.Resource{GUID: "asg-1-guid"},
+					GloballyEnabled: capi.SecurityGroupGloballyEnabled{
 						Running: false,
 						Staging: true,
 					},
-					Rules: []resource.SecurityGroupRule{},
+					Rules: []capi.SecurityGroupRule{},
 				},
 			}, nil)
 			fakeReader.GetGlobalConfigReturns(&config.GlobalConfig{
@@ -832,7 +833,7 @@ var _ = Describe("given Security Group Manager", func() {
 		})
 
 		It("should error since group doesn't exist", func() {
-			fakeClient.ListAllReturns([]*resource.SecurityGroup{}, nil)
+			fakeClient.ListAllReturns([]*capi.SecurityGroup{}, nil)
 			fakeReader.GetGlobalConfigReturns(&config.GlobalConfig{
 				StagingSecurityGroups: []string{"asg-1"},
 			}, nil)
@@ -842,15 +843,15 @@ var _ = Describe("given Security Group Manager", func() {
 		})
 
 		It("should unassign running security group", func() {
-			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+			fakeClient.ListAllReturns([]*capi.SecurityGroup{
 				{
-					Name: "asg-1",
-					GUID: "asg-1-guid",
-					GloballyEnabled: resource.SecurityGroupGloballyEnabled{
+					Name:     "asg-1",
+					Resource: capi.Resource{GUID: "asg-1-guid"},
+					GloballyEnabled: capi.SecurityGroupGloballyEnabled{
 						Running: true,
 						Staging: false,
 					},
-					Rules: []resource.SecurityGroupRule{},
+					Rules: []capi.SecurityGroupRule{},
 				},
 			}, nil)
 			fakeReader.GetGlobalConfigReturns(&config.GlobalConfig{
@@ -864,15 +865,15 @@ var _ = Describe("given Security Group Manager", func() {
 			Expect(updateRequest.GloballyEnabled.Running).To(BeFalse())
 		})
 		It("should unassign staging security group", func() {
-			fakeClient.ListAllReturns([]*resource.SecurityGroup{
+			fakeClient.ListAllReturns([]*capi.SecurityGroup{
 				{
-					Name: "asg-1",
-					GUID: "asg-1-guid",
-					GloballyEnabled: resource.SecurityGroupGloballyEnabled{
+					Name:     "asg-1",
+					Resource: capi.Resource{GUID: "asg-1-guid"},
+					GloballyEnabled: capi.SecurityGroupGloballyEnabled{
 						Running: false,
 						Staging: true,
 					},
-					Rules: []resource.SecurityGroupRule{},
+					Rules: []capi.SecurityGroupRule{},
 				},
 			}, nil)
 			fakeReader.GetGlobalConfigReturns(&config.GlobalConfig{
@@ -889,9 +890,9 @@ var _ = Describe("given Security Group Manager", func() {
 
 	Context("ListSpaceSecurityGroups", func() {
 		It("Should return 2", func() {
-			fakeClient.ListRunningForSpaceAllReturns([]*resource.SecurityGroup{
-				{Name: "1", GUID: "1-guid"},
-				{Name: "2", GUID: "2-guid"},
+			fakeClient.ListRunningForSpaceAllReturns([]*capi.SecurityGroup{
+				{Name: "1", Resource: capi.Resource{GUID: "1-guid"}},
+				{Name: "2", Resource: capi.Resource{GUID: "2-guid"}},
 			}, nil)
 			secGroups, err := securityMgr.ListSpaceSecurityGroups("spaceGUID")
 			Expect(err).ShouldNot(HaveOccurred())
@@ -906,13 +907,13 @@ var _ = Describe("given Security Group Manager", func() {
 
 	Context("GetSecurityGroupRules", func() {
 		It("Should succeed", func() {
-			securityGroupRules := []resource.SecurityGroupRule{}
+			securityGroupRules := []capi.SecurityGroupRule{}
 			err := json.Unmarshal([]byte(asg_config), &securityGroupRules)
 			Expect(err).ShouldNot(HaveOccurred())
-			fakeClient.GetReturns(&resource.SecurityGroup{
-				Name:  "1",
-				GUID:  "1-guid",
-				Rules: securityGroupRules,
+			fakeClient.GetReturns(&capi.SecurityGroup{
+				Name:     "1",
+				Resource: capi.Resource{GUID: "1-guid"},
+				Rules:    securityGroupRules,
 			}, nil)
 			bytes, err := securityMgr.GetSecurityGroupRules("sgGUID")
 			Expect(err).ShouldNot(HaveOccurred())
@@ -927,9 +928,9 @@ var _ = Describe("given Security Group Manager", func() {
 
 	Context("UnassignSecurityGroupGlobalStaging", func() {
 		It("Should succeed", func() {
-			err := securityMgr.UnassignSecurityGroupGlobalStaging(&resource.SecurityGroup{
-				Name: "sec-group",
-				GUID: "seg-group-guid",
+			err := securityMgr.UnassignSecurityGroupGlobalStaging(&capi.SecurityGroup{
+				Name:     "sec-group",
+				Resource: capi.Resource{GUID: "seg-group-guid"},
 			})
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(fakeClient.UpdateCallCount()).Should(Equal(1))
@@ -938,9 +939,9 @@ var _ = Describe("given Security Group Manager", func() {
 		})
 		It("Should peek", func() {
 			securityMgr.Peek = true
-			err := securityMgr.UnassignSecurityGroupGlobalStaging(&resource.SecurityGroup{
-				Name: "sec-group",
-				GUID: "seg-group-guid",
+			err := securityMgr.UnassignSecurityGroupGlobalStaging(&capi.SecurityGroup{
+				Name:     "sec-group",
+				Resource: capi.Resource{GUID: "seg-group-guid"},
 			})
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(fakeClient.UpdateCallCount()).Should(Equal(0))
@@ -949,9 +950,9 @@ var _ = Describe("given Security Group Manager", func() {
 
 	Context("UnassignSecurityGroupGlobalRunning", func() {
 		It("Should succeed", func() {
-			err := securityMgr.UnassignSecurityGroupGlobalRunning(&resource.SecurityGroup{
-				Name: "sec-group",
-				GUID: "seg-group-guid",
+			err := securityMgr.UnassignSecurityGroupGlobalRunning(&capi.SecurityGroup{
+				Name:     "sec-group",
+				Resource: capi.Resource{GUID: "seg-group-guid"},
 			})
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(fakeClient.UpdateCallCount()).Should(Equal(1))
@@ -961,9 +962,9 @@ var _ = Describe("given Security Group Manager", func() {
 		})
 		It("Should peek", func() {
 			securityMgr.Peek = true
-			err := securityMgr.UnassignSecurityGroupGlobalRunning(&resource.SecurityGroup{
-				Name: "sec-group",
-				GUID: "seg-group-guid",
+			err := securityMgr.UnassignSecurityGroupGlobalRunning(&capi.SecurityGroup{
+				Name:     "sec-group",
+				Resource: capi.Resource{GUID: "seg-group-guid"},
 			})
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(fakeClient.UpdateCallCount()).Should(Equal(0))
@@ -972,9 +973,9 @@ var _ = Describe("given Security Group Manager", func() {
 
 	Context("AssignSecurityGroupGlobalStaging", func() {
 		It("Should succeed", func() {
-			err := securityMgr.AssignSecurityGroupGlobalStaging(&resource.SecurityGroup{
-				Name: "sec-group",
-				GUID: "seg-group-guid",
+			err := securityMgr.AssignSecurityGroupGlobalStaging(&capi.SecurityGroup{
+				Name:     "sec-group",
+				Resource: capi.Resource{GUID: "seg-group-guid"},
 			})
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(fakeClient.UpdateCallCount()).Should(Equal(1))
@@ -984,9 +985,9 @@ var _ = Describe("given Security Group Manager", func() {
 		})
 		It("Should peek", func() {
 			securityMgr.Peek = true
-			err := securityMgr.AssignSecurityGroupGlobalStaging(&resource.SecurityGroup{
-				Name: "sec-group",
-				GUID: "seg-group-guid",
+			err := securityMgr.AssignSecurityGroupGlobalStaging(&capi.SecurityGroup{
+				Name:     "sec-group",
+				Resource: capi.Resource{GUID: "seg-group-guid"},
 			})
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(fakeClient.UpdateCallCount()).Should(Equal(0))
@@ -995,9 +996,9 @@ var _ = Describe("given Security Group Manager", func() {
 
 	Context("AssignSecurityGroupGlobalRunning", func() {
 		It("Should succeed", func() {
-			err := securityMgr.AssignSecurityGroupGlobalRunning(&resource.SecurityGroup{
-				Name: "sec-group",
-				GUID: "seg-group-guid",
+			err := securityMgr.AssignSecurityGroupGlobalRunning(&capi.SecurityGroup{
+				Name:     "sec-group",
+				Resource: capi.Resource{GUID: "seg-group-guid"},
 			})
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(fakeClient.UpdateCallCount()).Should(Equal(1))
@@ -1007,9 +1008,9 @@ var _ = Describe("given Security Group Manager", func() {
 		})
 		It("Should peek", func() {
 			securityMgr.Peek = true
-			err := securityMgr.AssignSecurityGroupGlobalRunning(&resource.SecurityGroup{
-				Name: "sec-group",
-				GUID: "seg-group-guid",
+			err := securityMgr.AssignSecurityGroupGlobalRunning(&capi.SecurityGroup{
+				Name:     "sec-group",
+				Resource: capi.Resource{GUID: "seg-group-guid"},
 			})
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(fakeClient.UpdateCallCount()).Should(Equal(0))

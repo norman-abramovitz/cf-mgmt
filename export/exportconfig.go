@@ -7,6 +7,7 @@ import (
 	"code.cloudfoundry.org/routing-api/models"
 	cfclient "github.com/cloudfoundry-community/go-cfclient"
 	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
+	"github.com/fivetwenty-io/capi/v3/pkg/capi"
 	"github.com/pkg/errors"
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
 	"github.com/vmwarepivotallabs/cf-mgmt/isosegment"
@@ -359,7 +360,7 @@ func (im *Manager) ExportConfig(excludedOrgs, excludedSpaces map[string]string, 
 	return im.ConfigMgr.SaveGlobalConfig(globalConfig)
 }
 
-func (im *Manager) processSpaces(globalConfig *config.GlobalConfig, orgConfig *config.OrgConfig, orgGUID string, excludedSpaces map[string]string, isolationSegments []cfclient.IsolationSegment, securityGroups map[string]*resource.SecurityGroup) error {
+func (im *Manager) processSpaces(globalConfig *config.GlobalConfig, orgConfig *config.OrgConfig, orgGUID string, excludedSpaces map[string]string, isolationSegments []cfclient.IsolationSegment, securityGroups map[string]*capi.SecurityGroup) error {
 	lo.G.Infof("Listing spaces for org %s", orgConfig.Org)
 	spaces, _ := im.SpaceManager.ListSpaces(orgGUID)
 	lo.G.Infof("Found %d Spaces for org %s", len(spaces), orgConfig.Org)

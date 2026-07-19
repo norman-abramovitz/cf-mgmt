@@ -5,8 +5,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/cloudfoundry-community/go-cfclient/v3/client"
-	"github.com/cloudfoundry-community/go-cfclient/v3/resource"
+	"github.com/fivetwenty-io/capi/v3/pkg/capi"
 	"github.com/vmwarepivotallabs/cf-mgmt/securitygroup"
 )
 
@@ -41,61 +40,60 @@ type FakeCFSecurityGroupClient struct {
 		result1 []string
 		result2 error
 	}
-	CreateStub        func(context.Context, *resource.SecurityGroupCreate) (*resource.SecurityGroup, error)
+	CreateStub        func(context.Context, *capi.SecurityGroupCreateRequest) (*capi.SecurityGroup, error)
 	createMutex       sync.RWMutex
 	createArgsForCall []struct {
 		arg1 context.Context
-		arg2 *resource.SecurityGroupCreate
+		arg2 *capi.SecurityGroupCreateRequest
 	}
 	createReturns struct {
-		result1 *resource.SecurityGroup
+		result1 *capi.SecurityGroup
 		result2 error
 	}
 	createReturnsOnCall map[int]struct {
-		result1 *resource.SecurityGroup
+		result1 *capi.SecurityGroup
 		result2 error
 	}
-	GetStub        func(context.Context, string) (*resource.SecurityGroup, error)
+	GetStub        func(context.Context, string) (*capi.SecurityGroup, error)
 	getMutex       sync.RWMutex
 	getArgsForCall []struct {
 		arg1 context.Context
 		arg2 string
 	}
 	getReturns struct {
-		result1 *resource.SecurityGroup
+		result1 *capi.SecurityGroup
 		result2 error
 	}
 	getReturnsOnCall map[int]struct {
-		result1 *resource.SecurityGroup
+		result1 *capi.SecurityGroup
 		result2 error
 	}
-	ListAllStub        func(context.Context, *client.SecurityGroupListOptions) ([]*resource.SecurityGroup, error)
+	ListAllStub        func(context.Context, *capi.QueryParams) ([]*capi.SecurityGroup, error)
 	listAllMutex       sync.RWMutex
 	listAllArgsForCall []struct {
 		arg1 context.Context
-		arg2 *client.SecurityGroupListOptions
+		arg2 *capi.QueryParams
 	}
 	listAllReturns struct {
-		result1 []*resource.SecurityGroup
+		result1 []*capi.SecurityGroup
 		result2 error
 	}
 	listAllReturnsOnCall map[int]struct {
-		result1 []*resource.SecurityGroup
+		result1 []*capi.SecurityGroup
 		result2 error
 	}
-	ListRunningForSpaceAllStub        func(context.Context, string, *client.SecurityGroupSpaceListOptions) ([]*resource.SecurityGroup, error)
+	ListRunningForSpaceAllStub        func(context.Context, string) ([]*capi.SecurityGroup, error)
 	listRunningForSpaceAllMutex       sync.RWMutex
 	listRunningForSpaceAllArgsForCall []struct {
 		arg1 context.Context
 		arg2 string
-		arg3 *client.SecurityGroupSpaceListOptions
 	}
 	listRunningForSpaceAllReturns struct {
-		result1 []*resource.SecurityGroup
+		result1 []*capi.SecurityGroup
 		result2 error
 	}
 	listRunningForSpaceAllReturnsOnCall map[int]struct {
-		result1 []*resource.SecurityGroup
+		result1 []*capi.SecurityGroup
 		result2 error
 	}
 	UnBindRunningSecurityGroupStub        func(context.Context, string, string) error
@@ -124,19 +122,19 @@ type FakeCFSecurityGroupClient struct {
 	unBindStagingSecurityGroupReturnsOnCall map[int]struct {
 		result1 error
 	}
-	UpdateStub        func(context.Context, string, *resource.SecurityGroupUpdate) (*resource.SecurityGroup, error)
+	UpdateStub        func(context.Context, string, *capi.SecurityGroupUpdateRequest) (*capi.SecurityGroup, error)
 	updateMutex       sync.RWMutex
 	updateArgsForCall []struct {
 		arg1 context.Context
 		arg2 string
-		arg3 *resource.SecurityGroupUpdate
+		arg3 *capi.SecurityGroupUpdateRequest
 	}
 	updateReturns struct {
-		result1 *resource.SecurityGroup
+		result1 *capi.SecurityGroup
 		result2 error
 	}
 	updateReturnsOnCall map[int]struct {
-		result1 *resource.SecurityGroup
+		result1 *capi.SecurityGroup
 		result2 error
 	}
 	invocations      map[string][][]interface{}
@@ -285,12 +283,12 @@ func (fake *FakeCFSecurityGroupClient) BindStagingSecurityGroupReturnsOnCall(i i
 	}{result1, result2}
 }
 
-func (fake *FakeCFSecurityGroupClient) Create(arg1 context.Context, arg2 *resource.SecurityGroupCreate) (*resource.SecurityGroup, error) {
+func (fake *FakeCFSecurityGroupClient) Create(arg1 context.Context, arg2 *capi.SecurityGroupCreateRequest) (*capi.SecurityGroup, error) {
 	fake.createMutex.Lock()
 	ret, specificReturn := fake.createReturnsOnCall[len(fake.createArgsForCall)]
 	fake.createArgsForCall = append(fake.createArgsForCall, struct {
 		arg1 context.Context
-		arg2 *resource.SecurityGroupCreate
+		arg2 *capi.SecurityGroupCreateRequest
 	}{arg1, arg2})
 	stub := fake.CreateStub
 	fakeReturns := fake.createReturns
@@ -311,46 +309,46 @@ func (fake *FakeCFSecurityGroupClient) CreateCallCount() int {
 	return len(fake.createArgsForCall)
 }
 
-func (fake *FakeCFSecurityGroupClient) CreateCalls(stub func(context.Context, *resource.SecurityGroupCreate) (*resource.SecurityGroup, error)) {
+func (fake *FakeCFSecurityGroupClient) CreateCalls(stub func(context.Context, *capi.SecurityGroupCreateRequest) (*capi.SecurityGroup, error)) {
 	fake.createMutex.Lock()
 	defer fake.createMutex.Unlock()
 	fake.CreateStub = stub
 }
 
-func (fake *FakeCFSecurityGroupClient) CreateArgsForCall(i int) (context.Context, *resource.SecurityGroupCreate) {
+func (fake *FakeCFSecurityGroupClient) CreateArgsForCall(i int) (context.Context, *capi.SecurityGroupCreateRequest) {
 	fake.createMutex.RLock()
 	defer fake.createMutex.RUnlock()
 	argsForCall := fake.createArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeCFSecurityGroupClient) CreateReturns(result1 *resource.SecurityGroup, result2 error) {
+func (fake *FakeCFSecurityGroupClient) CreateReturns(result1 *capi.SecurityGroup, result2 error) {
 	fake.createMutex.Lock()
 	defer fake.createMutex.Unlock()
 	fake.CreateStub = nil
 	fake.createReturns = struct {
-		result1 *resource.SecurityGroup
+		result1 *capi.SecurityGroup
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeCFSecurityGroupClient) CreateReturnsOnCall(i int, result1 *resource.SecurityGroup, result2 error) {
+func (fake *FakeCFSecurityGroupClient) CreateReturnsOnCall(i int, result1 *capi.SecurityGroup, result2 error) {
 	fake.createMutex.Lock()
 	defer fake.createMutex.Unlock()
 	fake.CreateStub = nil
 	if fake.createReturnsOnCall == nil {
 		fake.createReturnsOnCall = make(map[int]struct {
-			result1 *resource.SecurityGroup
+			result1 *capi.SecurityGroup
 			result2 error
 		})
 	}
 	fake.createReturnsOnCall[i] = struct {
-		result1 *resource.SecurityGroup
+		result1 *capi.SecurityGroup
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeCFSecurityGroupClient) Get(arg1 context.Context, arg2 string) (*resource.SecurityGroup, error) {
+func (fake *FakeCFSecurityGroupClient) Get(arg1 context.Context, arg2 string) (*capi.SecurityGroup, error) {
 	fake.getMutex.Lock()
 	ret, specificReturn := fake.getReturnsOnCall[len(fake.getArgsForCall)]
 	fake.getArgsForCall = append(fake.getArgsForCall, struct {
@@ -376,7 +374,7 @@ func (fake *FakeCFSecurityGroupClient) GetCallCount() int {
 	return len(fake.getArgsForCall)
 }
 
-func (fake *FakeCFSecurityGroupClient) GetCalls(stub func(context.Context, string) (*resource.SecurityGroup, error)) {
+func (fake *FakeCFSecurityGroupClient) GetCalls(stub func(context.Context, string) (*capi.SecurityGroup, error)) {
 	fake.getMutex.Lock()
 	defer fake.getMutex.Unlock()
 	fake.GetStub = stub
@@ -389,38 +387,38 @@ func (fake *FakeCFSecurityGroupClient) GetArgsForCall(i int) (context.Context, s
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeCFSecurityGroupClient) GetReturns(result1 *resource.SecurityGroup, result2 error) {
+func (fake *FakeCFSecurityGroupClient) GetReturns(result1 *capi.SecurityGroup, result2 error) {
 	fake.getMutex.Lock()
 	defer fake.getMutex.Unlock()
 	fake.GetStub = nil
 	fake.getReturns = struct {
-		result1 *resource.SecurityGroup
+		result1 *capi.SecurityGroup
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeCFSecurityGroupClient) GetReturnsOnCall(i int, result1 *resource.SecurityGroup, result2 error) {
+func (fake *FakeCFSecurityGroupClient) GetReturnsOnCall(i int, result1 *capi.SecurityGroup, result2 error) {
 	fake.getMutex.Lock()
 	defer fake.getMutex.Unlock()
 	fake.GetStub = nil
 	if fake.getReturnsOnCall == nil {
 		fake.getReturnsOnCall = make(map[int]struct {
-			result1 *resource.SecurityGroup
+			result1 *capi.SecurityGroup
 			result2 error
 		})
 	}
 	fake.getReturnsOnCall[i] = struct {
-		result1 *resource.SecurityGroup
+		result1 *capi.SecurityGroup
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeCFSecurityGroupClient) ListAll(arg1 context.Context, arg2 *client.SecurityGroupListOptions) ([]*resource.SecurityGroup, error) {
+func (fake *FakeCFSecurityGroupClient) ListAll(arg1 context.Context, arg2 *capi.QueryParams) ([]*capi.SecurityGroup, error) {
 	fake.listAllMutex.Lock()
 	ret, specificReturn := fake.listAllReturnsOnCall[len(fake.listAllArgsForCall)]
 	fake.listAllArgsForCall = append(fake.listAllArgsForCall, struct {
 		arg1 context.Context
-		arg2 *client.SecurityGroupListOptions
+		arg2 *capi.QueryParams
 	}{arg1, arg2})
 	stub := fake.ListAllStub
 	fakeReturns := fake.listAllReturns
@@ -441,59 +439,58 @@ func (fake *FakeCFSecurityGroupClient) ListAllCallCount() int {
 	return len(fake.listAllArgsForCall)
 }
 
-func (fake *FakeCFSecurityGroupClient) ListAllCalls(stub func(context.Context, *client.SecurityGroupListOptions) ([]*resource.SecurityGroup, error)) {
+func (fake *FakeCFSecurityGroupClient) ListAllCalls(stub func(context.Context, *capi.QueryParams) ([]*capi.SecurityGroup, error)) {
 	fake.listAllMutex.Lock()
 	defer fake.listAllMutex.Unlock()
 	fake.ListAllStub = stub
 }
 
-func (fake *FakeCFSecurityGroupClient) ListAllArgsForCall(i int) (context.Context, *client.SecurityGroupListOptions) {
+func (fake *FakeCFSecurityGroupClient) ListAllArgsForCall(i int) (context.Context, *capi.QueryParams) {
 	fake.listAllMutex.RLock()
 	defer fake.listAllMutex.RUnlock()
 	argsForCall := fake.listAllArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeCFSecurityGroupClient) ListAllReturns(result1 []*resource.SecurityGroup, result2 error) {
+func (fake *FakeCFSecurityGroupClient) ListAllReturns(result1 []*capi.SecurityGroup, result2 error) {
 	fake.listAllMutex.Lock()
 	defer fake.listAllMutex.Unlock()
 	fake.ListAllStub = nil
 	fake.listAllReturns = struct {
-		result1 []*resource.SecurityGroup
+		result1 []*capi.SecurityGroup
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeCFSecurityGroupClient) ListAllReturnsOnCall(i int, result1 []*resource.SecurityGroup, result2 error) {
+func (fake *FakeCFSecurityGroupClient) ListAllReturnsOnCall(i int, result1 []*capi.SecurityGroup, result2 error) {
 	fake.listAllMutex.Lock()
 	defer fake.listAllMutex.Unlock()
 	fake.ListAllStub = nil
 	if fake.listAllReturnsOnCall == nil {
 		fake.listAllReturnsOnCall = make(map[int]struct {
-			result1 []*resource.SecurityGroup
+			result1 []*capi.SecurityGroup
 			result2 error
 		})
 	}
 	fake.listAllReturnsOnCall[i] = struct {
-		result1 []*resource.SecurityGroup
+		result1 []*capi.SecurityGroup
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeCFSecurityGroupClient) ListRunningForSpaceAll(arg1 context.Context, arg2 string, arg3 *client.SecurityGroupSpaceListOptions) ([]*resource.SecurityGroup, error) {
+func (fake *FakeCFSecurityGroupClient) ListRunningForSpaceAll(arg1 context.Context, arg2 string) ([]*capi.SecurityGroup, error) {
 	fake.listRunningForSpaceAllMutex.Lock()
 	ret, specificReturn := fake.listRunningForSpaceAllReturnsOnCall[len(fake.listRunningForSpaceAllArgsForCall)]
 	fake.listRunningForSpaceAllArgsForCall = append(fake.listRunningForSpaceAllArgsForCall, struct {
 		arg1 context.Context
 		arg2 string
-		arg3 *client.SecurityGroupSpaceListOptions
-	}{arg1, arg2, arg3})
+	}{arg1, arg2})
 	stub := fake.ListRunningForSpaceAllStub
 	fakeReturns := fake.listRunningForSpaceAllReturns
-	fake.recordInvocation("ListRunningForSpaceAll", []interface{}{arg1, arg2, arg3})
+	fake.recordInvocation("ListRunningForSpaceAll", []interface{}{arg1, arg2})
 	fake.listRunningForSpaceAllMutex.Unlock()
 	if stub != nil {
-		return stub(arg1, arg2, arg3)
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -507,41 +504,41 @@ func (fake *FakeCFSecurityGroupClient) ListRunningForSpaceAllCallCount() int {
 	return len(fake.listRunningForSpaceAllArgsForCall)
 }
 
-func (fake *FakeCFSecurityGroupClient) ListRunningForSpaceAllCalls(stub func(context.Context, string, *client.SecurityGroupSpaceListOptions) ([]*resource.SecurityGroup, error)) {
+func (fake *FakeCFSecurityGroupClient) ListRunningForSpaceAllCalls(stub func(context.Context, string) ([]*capi.SecurityGroup, error)) {
 	fake.listRunningForSpaceAllMutex.Lock()
 	defer fake.listRunningForSpaceAllMutex.Unlock()
 	fake.ListRunningForSpaceAllStub = stub
 }
 
-func (fake *FakeCFSecurityGroupClient) ListRunningForSpaceAllArgsForCall(i int) (context.Context, string, *client.SecurityGroupSpaceListOptions) {
+func (fake *FakeCFSecurityGroupClient) ListRunningForSpaceAllArgsForCall(i int) (context.Context, string) {
 	fake.listRunningForSpaceAllMutex.RLock()
 	defer fake.listRunningForSpaceAllMutex.RUnlock()
 	argsForCall := fake.listRunningForSpaceAllArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeCFSecurityGroupClient) ListRunningForSpaceAllReturns(result1 []*resource.SecurityGroup, result2 error) {
+func (fake *FakeCFSecurityGroupClient) ListRunningForSpaceAllReturns(result1 []*capi.SecurityGroup, result2 error) {
 	fake.listRunningForSpaceAllMutex.Lock()
 	defer fake.listRunningForSpaceAllMutex.Unlock()
 	fake.ListRunningForSpaceAllStub = nil
 	fake.listRunningForSpaceAllReturns = struct {
-		result1 []*resource.SecurityGroup
+		result1 []*capi.SecurityGroup
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeCFSecurityGroupClient) ListRunningForSpaceAllReturnsOnCall(i int, result1 []*resource.SecurityGroup, result2 error) {
+func (fake *FakeCFSecurityGroupClient) ListRunningForSpaceAllReturnsOnCall(i int, result1 []*capi.SecurityGroup, result2 error) {
 	fake.listRunningForSpaceAllMutex.Lock()
 	defer fake.listRunningForSpaceAllMutex.Unlock()
 	fake.ListRunningForSpaceAllStub = nil
 	if fake.listRunningForSpaceAllReturnsOnCall == nil {
 		fake.listRunningForSpaceAllReturnsOnCall = make(map[int]struct {
-			result1 []*resource.SecurityGroup
+			result1 []*capi.SecurityGroup
 			result2 error
 		})
 	}
 	fake.listRunningForSpaceAllReturnsOnCall[i] = struct {
-		result1 []*resource.SecurityGroup
+		result1 []*capi.SecurityGroup
 		result2 error
 	}{result1, result2}
 }
@@ -672,13 +669,13 @@ func (fake *FakeCFSecurityGroupClient) UnBindStagingSecurityGroupReturnsOnCall(i
 	}{result1}
 }
 
-func (fake *FakeCFSecurityGroupClient) Update(arg1 context.Context, arg2 string, arg3 *resource.SecurityGroupUpdate) (*resource.SecurityGroup, error) {
+func (fake *FakeCFSecurityGroupClient) Update(arg1 context.Context, arg2 string, arg3 *capi.SecurityGroupUpdateRequest) (*capi.SecurityGroup, error) {
 	fake.updateMutex.Lock()
 	ret, specificReturn := fake.updateReturnsOnCall[len(fake.updateArgsForCall)]
 	fake.updateArgsForCall = append(fake.updateArgsForCall, struct {
 		arg1 context.Context
 		arg2 string
-		arg3 *resource.SecurityGroupUpdate
+		arg3 *capi.SecurityGroupUpdateRequest
 	}{arg1, arg2, arg3})
 	stub := fake.UpdateStub
 	fakeReturns := fake.updateReturns
@@ -699,41 +696,41 @@ func (fake *FakeCFSecurityGroupClient) UpdateCallCount() int {
 	return len(fake.updateArgsForCall)
 }
 
-func (fake *FakeCFSecurityGroupClient) UpdateCalls(stub func(context.Context, string, *resource.SecurityGroupUpdate) (*resource.SecurityGroup, error)) {
+func (fake *FakeCFSecurityGroupClient) UpdateCalls(stub func(context.Context, string, *capi.SecurityGroupUpdateRequest) (*capi.SecurityGroup, error)) {
 	fake.updateMutex.Lock()
 	defer fake.updateMutex.Unlock()
 	fake.UpdateStub = stub
 }
 
-func (fake *FakeCFSecurityGroupClient) UpdateArgsForCall(i int) (context.Context, string, *resource.SecurityGroupUpdate) {
+func (fake *FakeCFSecurityGroupClient) UpdateArgsForCall(i int) (context.Context, string, *capi.SecurityGroupUpdateRequest) {
 	fake.updateMutex.RLock()
 	defer fake.updateMutex.RUnlock()
 	argsForCall := fake.updateArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeCFSecurityGroupClient) UpdateReturns(result1 *resource.SecurityGroup, result2 error) {
+func (fake *FakeCFSecurityGroupClient) UpdateReturns(result1 *capi.SecurityGroup, result2 error) {
 	fake.updateMutex.Lock()
 	defer fake.updateMutex.Unlock()
 	fake.UpdateStub = nil
 	fake.updateReturns = struct {
-		result1 *resource.SecurityGroup
+		result1 *capi.SecurityGroup
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeCFSecurityGroupClient) UpdateReturnsOnCall(i int, result1 *resource.SecurityGroup, result2 error) {
+func (fake *FakeCFSecurityGroupClient) UpdateReturnsOnCall(i int, result1 *capi.SecurityGroup, result2 error) {
 	fake.updateMutex.Lock()
 	defer fake.updateMutex.Unlock()
 	fake.UpdateStub = nil
 	if fake.updateReturnsOnCall == nil {
 		fake.updateReturnsOnCall = make(map[int]struct {
-			result1 *resource.SecurityGroup
+			result1 *capi.SecurityGroup
 			result2 error
 		})
 	}
 	fake.updateReturnsOnCall[i] = struct {
-		result1 *resource.SecurityGroup
+		result1 *capi.SecurityGroup
 		result2 error
 	}{result1, result2}
 }
@@ -741,24 +738,6 @@ func (fake *FakeCFSecurityGroupClient) UpdateReturnsOnCall(i int, result1 *resou
 func (fake *FakeCFSecurityGroupClient) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.bindRunningSecurityGroupMutex.RLock()
-	defer fake.bindRunningSecurityGroupMutex.RUnlock()
-	fake.bindStagingSecurityGroupMutex.RLock()
-	defer fake.bindStagingSecurityGroupMutex.RUnlock()
-	fake.createMutex.RLock()
-	defer fake.createMutex.RUnlock()
-	fake.getMutex.RLock()
-	defer fake.getMutex.RUnlock()
-	fake.listAllMutex.RLock()
-	defer fake.listAllMutex.RUnlock()
-	fake.listRunningForSpaceAllMutex.RLock()
-	defer fake.listRunningForSpaceAllMutex.RUnlock()
-	fake.unBindRunningSecurityGroupMutex.RLock()
-	defer fake.unBindRunningSecurityGroupMutex.RUnlock()
-	fake.unBindStagingSecurityGroupMutex.RLock()
-	defer fake.unBindStagingSecurityGroupMutex.RUnlock()
-	fake.updateMutex.RLock()
-	defer fake.updateMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value
