@@ -1,12 +1,13 @@
 package config
 
 import (
+	"bytes"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/pkg/errors"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 // FindFiles -
@@ -64,11 +65,18 @@ func WriteFileBytes(configFile string, data []byte) error {
 
 // WriteFile -
 func WriteFile(configFile string, dataType interface{}) error {
-	data, err := yaml.Marshal(dataType)
-	if err != nil {
+	var buf bytes.Buffer
+	encoder := yaml.NewEncoder(&buf)
+	// keep the 2-space indentation yaml.v2 produced so existing
+	// config repos do not see whole-file reformat diffs
+	encoder.SetIndent(2)
+	if err := encoder.Encode(dataType); err != nil {
 		return err
 	}
-	return WriteFileBytes(configFile, data)
+	if err := encoder.Close(); err != nil {
+		return err
+	}
+	return WriteFileBytes(configFile, buf.Bytes())
 }
 
 // RenameDirectory -

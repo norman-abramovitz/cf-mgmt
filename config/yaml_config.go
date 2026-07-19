@@ -86,7 +86,14 @@ func (m *yamlManager) GetASGConfigs() ([]ASGConfig, error) {
 // GetIsolationSegmentConfig reads isolation segment config
 func (m *yamlManager) GetGlobalConfig() (*GlobalConfig, error) {
 	globalConfig := &GlobalConfig{}
-	LoadFile(path.Join(m.ConfigDir, "cf-mgmt.yml"), globalConfig)
+	configFile := path.Join(m.ConfigDir, "cf-mgmt.yml")
+	// missing cf-mgmt.yml is tolerated for config dirs created before global
+	// config existed; a file that exists but fails to parse is an error
+	if FileOrDirectoryExists(configFile) {
+		if err := LoadFile(configFile, globalConfig); err != nil {
+			return nil, err
+		}
+	}
 	if len(globalConfig.MetadataPrefix) == 0 {
 		globalConfig.MetadataPrefix = "cf-mgmt.pivotal.io"
 	}

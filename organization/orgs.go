@@ -11,7 +11,7 @@ import (
 	"github.com/vmwarepivotallabs/cf-mgmt/space"
 	"github.com/vmwarepivotallabs/cf-mgmt/util"
 	"github.com/xchapter7x/lo"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 func NewManager(orgClient CFOrgClient, orgReader organizationreader.Reader, cfg config.Reader, peek bool) Manager {
