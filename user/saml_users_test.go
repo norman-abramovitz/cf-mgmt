@@ -37,14 +37,15 @@ var _ = Describe("SamlUsers", func() {
 		orgFake = new(orgfakes.FakeReader)
 		roleMgrFake = new(rolefakes.FakeManager)
 		userManager = &DefaultManager{
-			Cfg:        fakeReader,
-			UAAMgr:     &uaa.DefaultUAAManager{Client: uaaFake},
-			LdapMgr:    ldapFake,
-			SpaceMgr:   spaceFake,
-			OrgReader:  orgFake,
-			Peek:       false,
-			RoleMgr:    roleMgrFake,
-			LdapConfig: &config.LdapConfig{Origin: "saml_origin"},
+			Cfg:           fakeReader,
+			UAAMgr:        &uaa.DefaultUAAManager{Client: uaaFake},
+			LdapMgr:       ldapFake,
+			SpaceMgr:      spaceFake,
+			OrgReader:     orgFake,
+			Peek:          false,
+			RoleMgr:       roleMgrFake,
+			LdapConfig:    &config.LdapConfig{Origin: "saml_origin"},
+			AzureADConfig: &config.AzureADConfig{},
 		}
 		roleMgrFake.ListOrgUsersByRoleReturns(role.InitRoleUsers(), role.InitRoleUsers(), role.InitRoleUsers(), role.InitRoleUsers(), nil)
 		fakeReader.GetGlobalConfigReturns(&config.GlobalConfig{}, nil)

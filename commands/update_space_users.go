@@ -5,6 +5,7 @@ import "fmt"
 type UpdateSpaceUsersCommand struct {
 	BaseCFConfigCommand
 	BaseLDAPCommand
+	BaseAzureADCommand
 	BasePeekCommand
 }
 
@@ -19,6 +20,9 @@ func (c *UpdateSpaceUsersCommand) Execute([]string) error {
 	}
 	cfMgmt, err := InitializePeekManagers(c.BaseCFConfigCommand, c.Peek, ldapMgr)
 	if err != nil {
+		return err
+	}
+	if err := cfMgmt.UserManager.InitializeAzureAD(c.AadTenantId, c.AadClientId, c.AadSecret, c.AADUserOrigin); err != nil {
 		return err
 	}
 	errs := cfMgmt.UserManager.UpdateSpaceUsers()

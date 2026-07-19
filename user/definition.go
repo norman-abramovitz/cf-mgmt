@@ -4,3 +4,4 @@ package user
 //counterfeiter:generate -o fakes/fake_cf_client.go types.go CFClient
 //counterfeiter:generate -o fakes/fake_mgr.go types.go Manager
 //counterfeiter:generate -o fakes/fake_ldap_mgr.go types.go LdapManager
+//counterfeiter:generate -o fakes/fake_aad_mgr.go types.go AzureADManager

@@ -8,7 +8,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/vmwarepivotallabs/cf-mgmt/config"
 	configfakes "github.com/vmwarepivotallabs/cf-mgmt/config/fakes"
-	ldap "github.com/vmwarepivotallabs/cf-mgmt/ldap"
+	"github.com/vmwarepivotallabs/cf-mgmt/ldap"
 	orgfakes "github.com/vmwarepivotallabs/cf-mgmt/organizationreader/fakes"
 	"github.com/vmwarepivotallabs/cf-mgmt/role"
 	rolefakes "github.com/vmwarepivotallabs/cf-mgmt/role/fakes"

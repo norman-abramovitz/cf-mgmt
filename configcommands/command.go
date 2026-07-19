@@ -17,14 +17,16 @@ type UserRole struct {
 	LDAPUsersToRemove  []string `long:"ldap-user-to-remove" description:"Ldap User to remove, specify multiple times"`
 	UsersToRemove      []string `long:"user-to-remove" description:"User to remove, specify multiple times"`
 	SamlUsersToRemove  []string `long:"saml-user-to-remove" description:"SAML user to remove, specify multiple times"`
-	LDAPGroupsToRemove []string `long:"ldap-group-to-remove" description:"Group to remove, specify multiple times"`
+	LDAPGroupsToRemove []string `long:"ldap-group-to-remove" description:"LDAP Group to remove, specify multiple times"`
+	AADGroupsToRemove  []string `long:"azure-ad-group-to-remove" description:"Azure AD Group to remove, specify multiple times"`
 }
 
 type UserRoleAdd struct {
 	LDAPUsers  []string `long:"ldap-user" description:"Ldap User to add, specify multiple times"`
 	Users      []string `long:"user" description:"User to add, specify multiple times"`
 	SamlUsers  []string `long:"saml-user" description:"SAML user to add, specify multiple times"`
-	LDAPGroups []string `long:"ldap-group" description:"Group to add, specify multiple times"`
+	LDAPGroups []string `long:"ldap-group" description:"LDAP Group to add, specify multiple times"`
+	AADGroups  []string `long:"azure-ad-group" description:"Azure AD Group to add, specify multiple times"`
 }
 
 type ServiceAccess struct {
@@ -102,16 +104,18 @@ type NamedSpaceQuota struct {
 	LogRateLimitBytesPerSecond string `long:"log-rate-limit-bytes-per-second" description:"Log Rate limit per app for a space"`
 }
 
-func updateUsersBasedOnRole(userMgmt *config.UserMgmt, currentLDAPGroups []string, userRole *UserRole, errorString *string) {
+func updateUsersBasedOnRole(userMgmt *config.UserMgmt, currentLDAPGroups []string, currentAADGroups []string, userRole *UserRole, errorString *string) {
 	userMgmt.LDAPGroups = removeFromSlice(addToSlice(currentLDAPGroups, userRole.LDAPGroups, errorString), userRole.LDAPGroupsToRemove)
+	userMgmt.AADGroups = removeFromSlice(addToSlice(currentAADGroups, userRole.AADGroups, errorString), userRole.AADGroupsToRemove)
 	userMgmt.Users = removeFromSlice(addToSlice(userMgmt.Users, userRole.Users, errorString), userRole.UsersToRemove)
 	userMgmt.SamlUsers = removeFromSlice(addToSlice(userMgmt.SamlUsers, userRole.SamlUsers, errorString), userRole.SamlUsersToRemove)
 	userMgmt.LDAPUsers = removeFromSlice(addToSlice(userMgmt.LDAPUsers, userRole.LDAPUsers, errorString), userRole.LDAPUsersToRemove)
 	userMgmt.LDAPGroup = ""
 }
 
-func addUsersBasedOnRole(userMgmt *config.UserMgmt, currentLDAPGroups []string, userRole *UserRoleAdd, errorString *string) {
+func addUsersBasedOnRole(userMgmt *config.UserMgmt, currentLDAPGroups []string, currentAADGroups []string, userRole *UserRoleAdd, errorString *string) {
 	userMgmt.LDAPGroups = addToSlice(currentLDAPGroups, userRole.LDAPGroups, errorString)
+	userMgmt.AADGroups = addToSlice(currentAADGroups, userRole.AADGroups, errorString)
 	userMgmt.Users = addToSlice(userMgmt.Users, userRole.Users, errorString)
 	userMgmt.SamlUsers = addToSlice(userMgmt.SamlUsers, userRole.SamlUsers, errorString)
 	userMgmt.LDAPUsers = addToSlice(userMgmt.LDAPUsers, userRole.LDAPUsers, errorString)

@@ -18,6 +18,20 @@ type FakeManager struct {
 	cleanupOrgUsersReturnsOnCall map[int]struct {
 		result1 []error
 	}
+	InitializeAzureADStub        func(string, string, string, string) error
+	initializeAzureADMutex       sync.RWMutex
+	initializeAzureADArgsForCall []struct {
+		arg1 string
+		arg2 string
+		arg3 string
+		arg4 string
+	}
+	initializeAzureADReturns struct {
+		result1 error
+	}
+	initializeAzureADReturnsOnCall map[int]struct {
+		result1 error
+	}
 	UpdateOrgUsersStub        func() []error
 	updateOrgUsersMutex       sync.RWMutex
 	updateOrgUsersArgsForCall []struct {
@@ -92,6 +106,70 @@ func (fake *FakeManager) CleanupOrgUsersReturnsOnCall(i int, result1 []error) {
 	}
 	fake.cleanupOrgUsersReturnsOnCall[i] = struct {
 		result1 []error
+	}{result1}
+}
+
+func (fake *FakeManager) InitializeAzureAD(arg1 string, arg2 string, arg3 string, arg4 string) error {
+	fake.initializeAzureADMutex.Lock()
+	ret, specificReturn := fake.initializeAzureADReturnsOnCall[len(fake.initializeAzureADArgsForCall)]
+	fake.initializeAzureADArgsForCall = append(fake.initializeAzureADArgsForCall, struct {
+		arg1 string
+		arg2 string
+		arg3 string
+		arg4 string
+	}{arg1, arg2, arg3, arg4})
+	stub := fake.InitializeAzureADStub
+	fakeReturns := fake.initializeAzureADReturns
+	fake.recordInvocation("InitializeAzureAD", []interface{}{arg1, arg2, arg3, arg4})
+	fake.initializeAzureADMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3, arg4)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeManager) InitializeAzureADCallCount() int {
+	fake.initializeAzureADMutex.RLock()
+	defer fake.initializeAzureADMutex.RUnlock()
+	return len(fake.initializeAzureADArgsForCall)
+}
+
+func (fake *FakeManager) InitializeAzureADCalls(stub func(string, string, string, string) error) {
+	fake.initializeAzureADMutex.Lock()
+	defer fake.initializeAzureADMutex.Unlock()
+	fake.InitializeAzureADStub = stub
+}
+
+func (fake *FakeManager) InitializeAzureADArgsForCall(i int) (string, string, string, string) {
+	fake.initializeAzureADMutex.RLock()
+	defer fake.initializeAzureADMutex.RUnlock()
+	argsForCall := fake.initializeAzureADArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
+}
+
+func (fake *FakeManager) InitializeAzureADReturns(result1 error) {
+	fake.initializeAzureADMutex.Lock()
+	defer fake.initializeAzureADMutex.Unlock()
+	fake.InitializeAzureADStub = nil
+	fake.initializeAzureADReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeManager) InitializeAzureADReturnsOnCall(i int, result1 error) {
+	fake.initializeAzureADMutex.Lock()
+	defer fake.initializeAzureADMutex.Unlock()
+	fake.InitializeAzureADStub = nil
+	if fake.initializeAzureADReturnsOnCall == nil {
+		fake.initializeAzureADReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.initializeAzureADReturnsOnCall[i] = struct {
+		result1 error
 	}{result1}
 }
 
@@ -204,12 +282,6 @@ func (fake *FakeManager) UpdateSpaceUsersReturnsOnCall(i int, result1 []error) {
 func (fake *FakeManager) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.cleanupOrgUsersMutex.RLock()
-	defer fake.cleanupOrgUsersMutex.RUnlock()
-	fake.updateOrgUsersMutex.RLock()
-	defer fake.updateOrgUsersMutex.RUnlock()
-	fake.updateSpaceUsersMutex.RLock()
-	defer fake.updateSpaceUsersMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

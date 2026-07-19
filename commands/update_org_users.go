@@ -5,6 +5,7 @@ import "fmt"
 type UpdateOrgUsersCommand struct {
 	BaseCFConfigCommand
 	BaseLDAPCommand
+	BaseAzureADCommand
 	BasePeekCommand
 }
 
@@ -18,10 +19,15 @@ func (c *UpdateOrgUsersCommand) Execute([]string) error {
 		defer ldapMgr.Close()
 	}
 	if cfMgmt, err := InitializePeekManagers(c.BaseCFConfigCommand, c.Peek, ldapMgr); err == nil {
+		if err := cfMgmt.UserManager.InitializeAzureAD(c.AadTenantId, c.AadClientId, c.AadSecret, c.AADUserOrigin); err != nil {
+			return err
+		}
+
 		errs := cfMgmt.UserManager.UpdateOrgUsers()
 		if len(errs) > 0 {
 			return fmt.Errorf("got errors processing update org users %v", errs)
 		}
+
 		return nil
 	}
 	return nil

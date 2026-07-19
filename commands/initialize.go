@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	routing_api "code.cloudfoundry.org/routing-api"
-	cfclient "github.com/cloudfoundry-community/go-cfclient"
+	"github.com/cloudfoundry-community/go-cfclient"
 	v3cfclient "github.com/cloudfoundry-community/go-cfclient/v3/client"
 	v3config "github.com/cloudfoundry-community/go-cfclient/v3/config"
 
@@ -133,6 +133,7 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool, ldapMgr 
 			ClientSecret: baseCommand.ClientSecret,
 			UserAgent:    userAgent,
 		}
+
 		cv3, err = v3config.NewClientSecret(fmt.Sprintf("https://api.%s", cfMgmt.SystemDomain),
 			baseCommand.UserID,
 			baseCommand.ClientSecret)
@@ -146,6 +147,7 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool, ldapMgr 
 
 	client, err := cfclient.NewClient(c)
 	if err != nil {
+		lo.G.Errorf("Error obtaining a New CF Client: %s", err)
 		return nil, err
 	}
 	v3client, err := v3cfclient.New(cv3)
@@ -177,7 +179,7 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool, ldapMgr 
 	if err != nil {
 		return nil, err
 	}
-	//needs to not include bearer prefix
+	// needs to not include bearer prefix
 	token = strings.Replace(token, "bearer ", "", 1)
 	routingAPIClient := routing_api.NewClient(c.ApiAddress, true)
 	routingAPIClient.SetToken(token)

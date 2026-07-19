@@ -4,9 +4,11 @@ package config
 type UserMgmt struct {
 	LDAPUsers  []string `yaml:"ldap_users"`
 	Users      []string `yaml:"users"`
+	SPNUsers   []string `yaml:"spn_users,omitempty"`
 	SamlUsers  []string `yaml:"saml_users"`
 	LDAPGroup  string   `yaml:"ldap_group,omitempty"`
 	LDAPGroups []string `yaml:"ldap_groups"`
+	AADGroups  []string `yaml:"aad_groups"`
 }
 
 // UserOrigin is an enum type encoding from what source a user originated.
@@ -28,6 +30,9 @@ const (
 func (u *UserMgmt) groups(groupName string) []string {
 	groupMap := make(map[string]string)
 	for _, group := range u.LDAPGroups {
+		groupMap[group] = group
+	}
+	for _, group := range u.AADGroups {
 		groupMap[group] = group
 	}
 	if u.LDAPGroup != "" {

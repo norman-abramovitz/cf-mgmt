@@ -8,6 +8,22 @@ import (
 )
 
 type FakeReader struct {
+	AzureADConfigStub        func(string, string, string, string) (*config.AzureADConfig, error)
+	azureADConfigMutex       sync.RWMutex
+	azureADConfigArgsForCall []struct {
+		arg1 string
+		arg2 string
+		arg3 string
+		arg4 string
+	}
+	azureADConfigReturns struct {
+		result1 *config.AzureADConfig
+		result2 error
+	}
+	azureADConfigReturnsOnCall map[int]struct {
+		result1 *config.AzureADConfig
+		result2 error
+	}
 	GetASGConfigsStub        func() ([]config.ASGConfig, error)
 	getASGConfigsMutex       sync.RWMutex
 	getASGConfigsArgsForCall []struct {
@@ -213,6 +229,73 @@ type FakeReader struct {
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *FakeReader) AzureADConfig(arg1 string, arg2 string, arg3 string, arg4 string) (*config.AzureADConfig, error) {
+	fake.azureADConfigMutex.Lock()
+	ret, specificReturn := fake.azureADConfigReturnsOnCall[len(fake.azureADConfigArgsForCall)]
+	fake.azureADConfigArgsForCall = append(fake.azureADConfigArgsForCall, struct {
+		arg1 string
+		arg2 string
+		arg3 string
+		arg4 string
+	}{arg1, arg2, arg3, arg4})
+	stub := fake.AzureADConfigStub
+	fakeReturns := fake.azureADConfigReturns
+	fake.recordInvocation("AzureADConfig", []interface{}{arg1, arg2, arg3, arg4})
+	fake.azureADConfigMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3, arg4)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeReader) AzureADConfigCallCount() int {
+	fake.azureADConfigMutex.RLock()
+	defer fake.azureADConfigMutex.RUnlock()
+	return len(fake.azureADConfigArgsForCall)
+}
+
+func (fake *FakeReader) AzureADConfigCalls(stub func(string, string, string, string) (*config.AzureADConfig, error)) {
+	fake.azureADConfigMutex.Lock()
+	defer fake.azureADConfigMutex.Unlock()
+	fake.AzureADConfigStub = stub
+}
+
+func (fake *FakeReader) AzureADConfigArgsForCall(i int) (string, string, string, string) {
+	fake.azureADConfigMutex.RLock()
+	defer fake.azureADConfigMutex.RUnlock()
+	argsForCall := fake.azureADConfigArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
+}
+
+func (fake *FakeReader) AzureADConfigReturns(result1 *config.AzureADConfig, result2 error) {
+	fake.azureADConfigMutex.Lock()
+	defer fake.azureADConfigMutex.Unlock()
+	fake.AzureADConfigStub = nil
+	fake.azureADConfigReturns = struct {
+		result1 *config.AzureADConfig
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeReader) AzureADConfigReturnsOnCall(i int, result1 *config.AzureADConfig, result2 error) {
+	fake.azureADConfigMutex.Lock()
+	defer fake.azureADConfigMutex.Unlock()
+	fake.AzureADConfigStub = nil
+	if fake.azureADConfigReturnsOnCall == nil {
+		fake.azureADConfigReturnsOnCall = make(map[int]struct {
+			result1 *config.AzureADConfig
+			result2 error
+		})
+	}
+	fake.azureADConfigReturnsOnCall[i] = struct {
+		result1 *config.AzureADConfig
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *FakeReader) GetASGConfigs() ([]config.ASGConfig, error) {
@@ -1174,38 +1257,6 @@ func (fake *FakeReader) SpacesReturnsOnCall(i int, result1 []config.Spaces, resu
 func (fake *FakeReader) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.getASGConfigsMutex.RLock()
-	defer fake.getASGConfigsMutex.RUnlock()
-	fake.getDefaultASGConfigsMutex.RLock()
-	defer fake.getDefaultASGConfigsMutex.RUnlock()
-	fake.getGlobalConfigMutex.RLock()
-	defer fake.getGlobalConfigMutex.RUnlock()
-	fake.getOrgConfigMutex.RLock()
-	defer fake.getOrgConfigMutex.RUnlock()
-	fake.getOrgConfigsMutex.RLock()
-	defer fake.getOrgConfigsMutex.RUnlock()
-	fake.getOrgQuotaMutex.RLock()
-	defer fake.getOrgQuotaMutex.RUnlock()
-	fake.getOrgQuotasMutex.RLock()
-	defer fake.getOrgQuotasMutex.RUnlock()
-	fake.getSpaceConfigMutex.RLock()
-	defer fake.getSpaceConfigMutex.RUnlock()
-	fake.getSpaceConfigsMutex.RLock()
-	defer fake.getSpaceConfigsMutex.RUnlock()
-	fake.getSpaceDefaultsMutex.RLock()
-	defer fake.getSpaceDefaultsMutex.RUnlock()
-	fake.getSpaceQuotaMutex.RLock()
-	defer fake.getSpaceQuotaMutex.RUnlock()
-	fake.getSpaceQuotasMutex.RLock()
-	defer fake.getSpaceQuotasMutex.RUnlock()
-	fake.ldapConfigMutex.RLock()
-	defer fake.ldapConfigMutex.RUnlock()
-	fake.orgSpacesMutex.RLock()
-	defer fake.orgSpacesMutex.RUnlock()
-	fake.orgsMutex.RLock()
-	defer fake.orgsMutex.RUnlock()
-	fake.spacesMutex.RLock()
-	defer fake.spacesMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

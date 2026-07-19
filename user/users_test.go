@@ -24,6 +24,7 @@ var _ = Describe("given UserSpaces", func() {
 		userManager *DefaultManager
 		ldapFake    *fakes.FakeLdapManager
 		uaaFake     *uaafakes.FakeUaa
+		azureADFake *fakes.FakeAzureADManager
 		fakeReader  *configfakes.FakeReader
 		spaceFake   *spacefakes.FakeManager
 		orgFake     *orgfakes.FakeReader
@@ -32,6 +33,7 @@ var _ = Describe("given UserSpaces", func() {
 	BeforeEach(func() {
 		ldapFake = new(fakes.FakeLdapManager)
 		uaaFake = new(uaafakes.FakeUaa)
+		azureADFake = new(fakes.FakeAzureADManager)
 		fakeReader = new(configfakes.FakeReader)
 		spaceFake = new(spacefakes.FakeManager)
 		orgFake = new(orgfakes.FakeReader)
@@ -40,14 +42,16 @@ var _ = Describe("given UserSpaces", func() {
 	Context("User Manager()", func() {
 		BeforeEach(func() {
 			userManager = &DefaultManager{
-				Cfg:        fakeReader,
-				UAAMgr:     &uaa.DefaultUAAManager{Client: uaaFake},
-				LdapMgr:    ldapFake,
-				SpaceMgr:   spaceFake,
-				OrgReader:  orgFake,
-				Peek:       false,
-				RoleMgr:    roleMgrFake,
-				LdapConfig: &config.LdapConfig{Origin: "ldap"},
+				Cfg:           fakeReader,
+				UAAMgr:        &uaa.DefaultUAAManager{Client: uaaFake},
+				LdapMgr:       ldapFake,
+				AzureADMgr:    azureADFake,
+				SpaceMgr:      spaceFake,
+				OrgReader:     orgFake,
+				Peek:          false,
+				RoleMgr:       roleMgrFake,
+				LdapConfig:    &config.LdapConfig{Origin: "ldap"},
+				AzureADConfig: &config.AzureADConfig{},
 			}
 
 			fakeReader.GetGlobalConfigReturns(&config.GlobalConfig{}, nil)
@@ -79,7 +83,7 @@ var _ = Describe("given UserSpaces", func() {
 					AddUser:   roleMgrFake.AssociateSpaceAuditor,
 					RoleUsers: role.InitRoleUsers(),
 				}
-				err := userManager.SyncInternalUsers(roleUsers, updateUsersInput)
+				err := userManager.SyncInternalUsers(roleUsers, updateUsersInput, false)
 				Expect(err).ShouldNot(HaveOccurred())
 				orgGUID, spaceName, spaceGUID, userName, userGUID := roleMgrFake.AssociateSpaceAuditorArgsForCall(0)
 				Expect(orgGUID).Should(Equal("org_guid"))
@@ -99,7 +103,7 @@ var _ = Describe("given UserSpaces", func() {
 					AddUser:   roleMgrFake.AssociateSpaceAuditor,
 					RoleUsers: role.InitRoleUsers(),
 				}
-				err := userManager.SyncInternalUsers(roleUsers, updateUsersInput)
+				err := userManager.SyncInternalUsers(roleUsers, updateUsersInput, false)
 				Expect(err).ShouldNot(HaveOccurred())
 				orgGUID, spaceName, spaceGUID, userName, userGUID := roleMgrFake.AssociateSpaceAuditorArgsForCall(0)
 				Expect(orgGUID).Should(Equal("org_guid"))
@@ -117,7 +121,7 @@ var _ = Describe("given UserSpaces", func() {
 					AddUser:   roleMgrFake.AssociateSpaceAuditor,
 					RoleUsers: role.InitRoleUsers(),
 				}
-				err := userManager.SyncInternalUsers(roleUsers, updateUsersInput)
+				err := userManager.SyncInternalUsers(roleUsers, updateUsersInput, false)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(roleMgrFake.AssociateSpaceAuditorCallCount()).Should(Equal(0))
 			})
@@ -129,7 +133,7 @@ var _ = Describe("given UserSpaces", func() {
 					AddUser:   roleMgrFake.AssociateSpaceAuditor,
 					RoleUsers: role.InitRoleUsers(),
 				}
-				err := userManager.SyncInternalUsers(roleUsers, updateUsersInput)
+				err := userManager.SyncInternalUsers(roleUsers, updateUsersInput, false)
 				Expect(err).Should(HaveOccurred())
 				Expect(err.Error()).Should(Equal("user test2 doesn't exist in origin uaa, so must add internal user first"))
 			})
@@ -143,7 +147,7 @@ var _ = Describe("given UserSpaces", func() {
 					RoleUsers: role.InitRoleUsers(),
 				}
 				roleMgrFake.AssociateSpaceAuditorReturns(errors.New("error"))
-				err := userManager.SyncInternalUsers(roleUsers, updateUsersInput)
+				err := userManager.SyncInternalUsers(roleUsers, updateUsersInput, false)
 				Expect(err).Should(HaveOccurred())
 				Expect(roleMgrFake.AssociateSpaceAuditorCallCount()).Should(Equal(1))
 			})

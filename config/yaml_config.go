@@ -160,7 +160,7 @@ func (m *yamlManager) OrgSpaces(orgName string) (*Spaces, error) {
 func (m *yamlManager) GetSpaceConfigs() ([]SpaceConfig, error) {
 
 	spaceDefaults := SpaceConfig{}
-	LoadFile(filepath.Join(m.ConfigDir, "spaceDefaults.yml"), &spaceDefaults)
+	_ = LoadFile(filepath.Join(m.ConfigDir, "spaceDefaults.yml"), &spaceDefaults)
 
 	files, err := FindFiles(m.ConfigDir, "spaceConfig.yml")
 	if err != nil {
@@ -196,6 +196,10 @@ func (m *yamlManager) GetSpaceConfigs() ([]SpaceConfig, error) {
 		result[i].Developer.LDAPGroups = append(result[i].GetDeveloperGroups(), spaceDefaults.GetDeveloperGroups()...)
 		result[i].Auditor.LDAPGroups = append(result[i].GetAuditorGroups(), spaceDefaults.GetAuditorGroups()...)
 		result[i].Manager.LDAPGroups = append(result[i].GetManagerGroups(), spaceDefaults.GetManagerGroups()...)
+
+		result[i].Developer.AADGroups = append(result[i].GetDeveloperGroups(), spaceDefaults.GetDeveloperGroups()...)
+		result[i].Auditor.AADGroups = append(result[i].GetAuditorGroups(), spaceDefaults.GetAuditorGroups()...)
+		result[i].Manager.AADGroups = append(result[i].GetManagerGroups(), spaceDefaults.GetManagerGroups()...)
 
 		if result[i].EnableSecurityGroup {
 			securityGroupFile := strings.Replace(f, "spaceConfig.yml", "security-group.json", -1)
@@ -328,7 +332,7 @@ func (m *yamlManager) DeleteOrgConfig(orgName string) error {
 		if err := m.SaveOrgs(orgs); err != nil {
 			return err
 		}
-		os.RemoveAll(path.Join(m.ConfigDir, orgName))
+		_ = os.RemoveAll(path.Join(m.ConfigDir, orgName))
 	}
 	return nil
 }
@@ -349,7 +353,7 @@ func (m *yamlManager) DeleteSpaceConfig(orgName, spaceName string) error {
 		if err := m.SaveOrgSpaces(spaces); err != nil {
 			return err
 		}
-		os.RemoveAll(path.Join(m.ConfigDir, orgName, spaceName))
+		_ = os.RemoveAll(path.Join(m.ConfigDir, orgName, spaceName))
 	}
 	return nil
 }
@@ -496,7 +500,9 @@ func (m *yamlManager) CreateConfigIfNotExists(uaaOrigin string) error {
 	if err := WriteFile(fmt.Sprintf("%s/ldap.yml", m.ConfigDir), &LdapConfig{TLS: false, Origin: uaaOrigin}); err != nil {
 		return err
 	}
-
+	if err := WriteFile(fmt.Sprintf("%s/azureAD.yml", m.ConfigDir), &AzureADConfig{Enabled: false}); err != nil {
+		return err
+	}
 	if err := WriteFile(fmt.Sprintf("%s/orgs.yml", m.ConfigDir), &Orgs{
 		EnableDeleteOrgs: false,
 		ProtectedOrgs:    DefaultProtectedOrgs,
@@ -555,6 +561,51 @@ func (m *yamlManager) LdapConfig(ldapBindUser, ldapBindPassword, ldapServer stri
 	}
 	if config.Origin == "" {
 		config.Origin = "ldap"
+	}
+	return config, nil
+}
+
+func (m *yamlManager) AzureADConfig(tenantId, clientId, secret, origin string) (*AzureADConfig, error) {
+	lo.G.Debug("Getting AzureADConfig")
+	config := &AzureADConfig{}
+	configFile := path.Join(m.ConfigDir, "azureAD.yml")
+	// missing azureAD.yml simply means Azure AD is not in use; a file that
+	// exists but fails to parse must error rather than silently disable AAD
+	if !FileOrDirectoryExists(configFile) {
+		lo.G.Debug("File azureAD.yml not found, Azure AD disabled")
+		config.Enabled = false
+		config.UserOrigin = "Disabled"
+		return config, nil
+	}
+	if err := LoadFile(configFile, config); err != nil {
+		return nil, err
+	}
+
+	if config.Enabled {
+		if tenantId != "" {
+			lo.G.Infof("Using environment provided Azure AD tenantID %s instead of %s", tenantId, config.TenantID)
+			config.TenantID = tenantId
+		}
+
+		if secret != "" {
+			config.Secret = secret
+		} else {
+			lo.G.Error("Azure AD secret missing. Use AAD_SECRET environment variable or --aad-secret flag instead.")
+			return config, errors.New("Azure AD secret missing. Use AAD_SECRET environment variable or --aad-secret flag instead.")
+		}
+
+		if clientId != "" {
+			lo.G.Infof("Using environment Azure AD ClientID %s instead of %s", clientId, config.ClientId)
+			config.ClientId = clientId
+		}
+
+		if origin != "" {
+			lo.G.Infof("Using environment provided Azure AD Origin %s instead of %s", origin, config.UserOrigin)
+			config.UserOrigin = origin
+		}
+		// SPNOrigin: always use from file
+	} else {
+		config.UserOrigin = "Disabled" // Needed way down in the code path. Should at that point not be empty
 	}
 	return config, nil
 }

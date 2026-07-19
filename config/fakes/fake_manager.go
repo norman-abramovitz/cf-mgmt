@@ -130,6 +130,22 @@ type FakeManager struct {
 	associateSpaceDeveloperReturnsOnCall map[int]struct {
 		result1 error
 	}
+	AzureADConfigStub        func(string, string, string, string) (*config.AzureADConfig, error)
+	azureADConfigMutex       sync.RWMutex
+	azureADConfigArgsForCall []struct {
+		arg1 string
+		arg2 string
+		arg3 string
+		arg4 string
+	}
+	azureADConfigReturns struct {
+		result1 *config.AzureADConfig
+		result2 error
+	}
+	azureADConfigReturnsOnCall map[int]struct {
+		result1 *config.AzureADConfig
+		result2 error
+	}
 	CreateConfigIfNotExistsStub        func(string) error
 	createConfigIfNotExistsMutex       sync.RWMutex
 	createConfigIfNotExistsArgsForCall []struct {
@@ -1115,6 +1131,73 @@ func (fake *FakeManager) AssociateSpaceDeveloperReturnsOnCall(i int, result1 err
 	fake.associateSpaceDeveloperReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
+}
+
+func (fake *FakeManager) AzureADConfig(arg1 string, arg2 string, arg3 string, arg4 string) (*config.AzureADConfig, error) {
+	fake.azureADConfigMutex.Lock()
+	ret, specificReturn := fake.azureADConfigReturnsOnCall[len(fake.azureADConfigArgsForCall)]
+	fake.azureADConfigArgsForCall = append(fake.azureADConfigArgsForCall, struct {
+		arg1 string
+		arg2 string
+		arg3 string
+		arg4 string
+	}{arg1, arg2, arg3, arg4})
+	stub := fake.AzureADConfigStub
+	fakeReturns := fake.azureADConfigReturns
+	fake.recordInvocation("AzureADConfig", []interface{}{arg1, arg2, arg3, arg4})
+	fake.azureADConfigMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3, arg4)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeManager) AzureADConfigCallCount() int {
+	fake.azureADConfigMutex.RLock()
+	defer fake.azureADConfigMutex.RUnlock()
+	return len(fake.azureADConfigArgsForCall)
+}
+
+func (fake *FakeManager) AzureADConfigCalls(stub func(string, string, string, string) (*config.AzureADConfig, error)) {
+	fake.azureADConfigMutex.Lock()
+	defer fake.azureADConfigMutex.Unlock()
+	fake.AzureADConfigStub = stub
+}
+
+func (fake *FakeManager) AzureADConfigArgsForCall(i int) (string, string, string, string) {
+	fake.azureADConfigMutex.RLock()
+	defer fake.azureADConfigMutex.RUnlock()
+	argsForCall := fake.azureADConfigArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
+}
+
+func (fake *FakeManager) AzureADConfigReturns(result1 *config.AzureADConfig, result2 error) {
+	fake.azureADConfigMutex.Lock()
+	defer fake.azureADConfigMutex.Unlock()
+	fake.AzureADConfigStub = nil
+	fake.azureADConfigReturns = struct {
+		result1 *config.AzureADConfig
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeManager) AzureADConfigReturnsOnCall(i int, result1 *config.AzureADConfig, result2 error) {
+	fake.azureADConfigMutex.Lock()
+	defer fake.azureADConfigMutex.Unlock()
+	fake.AzureADConfigStub = nil
+	if fake.azureADConfigReturnsOnCall == nil {
+		fake.azureADConfigReturnsOnCall = make(map[int]struct {
+			result1 *config.AzureADConfig
+			result2 error
+		})
+	}
+	fake.azureADConfigReturnsOnCall[i] = struct {
+		result1 *config.AzureADConfig
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *FakeManager) CreateConfigIfNotExists(arg1 string) error {
@@ -2862,84 +2945,6 @@ func (fake *FakeManager) SpacesReturnsOnCall(i int, result1 []config.Spaces, res
 func (fake *FakeManager) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.addDefaultSecurityGroupMutex.RLock()
-	defer fake.addDefaultSecurityGroupMutex.RUnlock()
-	fake.addOrgQuotaMutex.RLock()
-	defer fake.addOrgQuotaMutex.RUnlock()
-	fake.addOrgToConfigMutex.RLock()
-	defer fake.addOrgToConfigMutex.RUnlock()
-	fake.addSecurityGroupMutex.RLock()
-	defer fake.addSecurityGroupMutex.RUnlock()
-	fake.addSecurityGroupToSpaceMutex.RLock()
-	defer fake.addSecurityGroupToSpaceMutex.RUnlock()
-	fake.addSpaceQuotaMutex.RLock()
-	defer fake.addSpaceQuotaMutex.RUnlock()
-	fake.addSpaceToConfigMutex.RLock()
-	defer fake.addSpaceToConfigMutex.RUnlock()
-	fake.associateOrgAuditorMutex.RLock()
-	defer fake.associateOrgAuditorMutex.RUnlock()
-	fake.associateSpaceAuditorMutex.RLock()
-	defer fake.associateSpaceAuditorMutex.RUnlock()
-	fake.associateSpaceDeveloperMutex.RLock()
-	defer fake.associateSpaceDeveloperMutex.RUnlock()
-	fake.createConfigIfNotExistsMutex.RLock()
-	defer fake.createConfigIfNotExistsMutex.RUnlock()
-	fake.deleteConfigIfExistsMutex.RLock()
-	defer fake.deleteConfigIfExistsMutex.RUnlock()
-	fake.deleteOrgConfigMutex.RLock()
-	defer fake.deleteOrgConfigMutex.RUnlock()
-	fake.deleteSpaceConfigMutex.RLock()
-	defer fake.deleteSpaceConfigMutex.RUnlock()
-	fake.getASGConfigsMutex.RLock()
-	defer fake.getASGConfigsMutex.RUnlock()
-	fake.getDefaultASGConfigsMutex.RLock()
-	defer fake.getDefaultASGConfigsMutex.RUnlock()
-	fake.getGlobalConfigMutex.RLock()
-	defer fake.getGlobalConfigMutex.RUnlock()
-	fake.getOrgConfigMutex.RLock()
-	defer fake.getOrgConfigMutex.RUnlock()
-	fake.getOrgConfigsMutex.RLock()
-	defer fake.getOrgConfigsMutex.RUnlock()
-	fake.getOrgQuotaMutex.RLock()
-	defer fake.getOrgQuotaMutex.RUnlock()
-	fake.getOrgQuotasMutex.RLock()
-	defer fake.getOrgQuotasMutex.RUnlock()
-	fake.getSpaceConfigMutex.RLock()
-	defer fake.getSpaceConfigMutex.RUnlock()
-	fake.getSpaceConfigsMutex.RLock()
-	defer fake.getSpaceConfigsMutex.RUnlock()
-	fake.getSpaceDefaultsMutex.RLock()
-	defer fake.getSpaceDefaultsMutex.RUnlock()
-	fake.getSpaceQuotaMutex.RLock()
-	defer fake.getSpaceQuotaMutex.RUnlock()
-	fake.getSpaceQuotasMutex.RLock()
-	defer fake.getSpaceQuotasMutex.RUnlock()
-	fake.ldapConfigMutex.RLock()
-	defer fake.ldapConfigMutex.RUnlock()
-	fake.orgSpacesMutex.RLock()
-	defer fake.orgSpacesMutex.RUnlock()
-	fake.orgsMutex.RLock()
-	defer fake.orgsMutex.RUnlock()
-	fake.renameOrgConfigMutex.RLock()
-	defer fake.renameOrgConfigMutex.RUnlock()
-	fake.renameSpaceConfigMutex.RLock()
-	defer fake.renameSpaceConfigMutex.RUnlock()
-	fake.saveGlobalConfigMutex.RLock()
-	defer fake.saveGlobalConfigMutex.RUnlock()
-	fake.saveOrgConfigMutex.RLock()
-	defer fake.saveOrgConfigMutex.RUnlock()
-	fake.saveOrgQuotaMutex.RLock()
-	defer fake.saveOrgQuotaMutex.RUnlock()
-	fake.saveOrgSpacesMutex.RLock()
-	defer fake.saveOrgSpacesMutex.RUnlock()
-	fake.saveOrgsMutex.RLock()
-	defer fake.saveOrgsMutex.RUnlock()
-	fake.saveSpaceConfigMutex.RLock()
-	defer fake.saveSpaceConfigMutex.RUnlock()
-	fake.saveSpaceQuotaMutex.RLock()
-	defer fake.saveSpaceQuotaMutex.RUnlock()
-	fake.spacesMutex.RLock()
-	defer fake.spacesMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

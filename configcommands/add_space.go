@@ -96,9 +96,9 @@ func (c *AddSpaceToConfigurationCommand) sshConfig(spaceConfig *config.SpaceConf
 }
 
 func (c *AddSpaceToConfigurationCommand) updateUsers(spaceConfig *config.SpaceConfig, errorString *string) {
-	addUsersBasedOnRole(&spaceConfig.Developer, spaceConfig.GetDeveloperGroups(), &c.Developer, errorString)
-	addUsersBasedOnRole(&spaceConfig.Auditor, spaceConfig.GetAuditorGroups(), &c.Auditor, errorString)
-	addUsersBasedOnRole(&spaceConfig.Manager, spaceConfig.GetManagerGroups(), &c.Manager, errorString)
+	addUsersBasedOnRole(&spaceConfig.Developer, spaceConfig.GetDeveloperGroups(), spaceConfig.GetDeveloperGroups(), &c.Developer, errorString)
+	addUsersBasedOnRole(&spaceConfig.Auditor, spaceConfig.GetAuditorGroups(), spaceConfig.GetAuditorGroups(), &c.Auditor, errorString)
+	addUsersBasedOnRole(&spaceConfig.Manager, spaceConfig.GetManagerGroups(), spaceConfig.GetManagerGroups(), &c.Manager, errorString)
 
 	spaceConfig.DeveloperGroup = ""
 	spaceConfig.ManagerGroup = ""
