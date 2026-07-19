@@ -551,7 +551,8 @@ func (m *yamlManager) LdapConfig(ldapBindUser, ldapBindPassword, ldapServer stri
 
 	if len(config.BindPassword) > 0 {
 		lo.G.Warning("Ldap bind password should be removed from ldap.yml as this will be deprecated in a future release.  Use --ldap-password flag instead.")
-	} else {
+	}
+	if ldapBindPassword != "" {
 		config.BindPassword = ldapBindPassword
 	}
 
