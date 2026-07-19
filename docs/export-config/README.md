@@ -29,6 +29,7 @@ Help Options:
           --user-id=             user id that has privileges to create/update/delete users, orgs and spaces [$USER_ID]
           --password=            password for user account [optional if client secret is provided] [$PASSWORD]
           --client-secret=       secret for user account that has sufficient privileges to create/update/delete users, orgs and spaces]
+          --skip-ssl-validation  skip TLS certificate verification when talking to the platform [not recommended] [$SKIP_SSL_VALIDATION]
                                  [$CLIENT_SECRET]
           --excluded-org=        Org to be excluded from export. Repeat the flag to specify multiple orgs
           --excluded-space=      Space to be excluded from export. Repeat the flag to specify multiple spaces

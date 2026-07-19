@@ -5,10 +5,11 @@ import "github.com/vmwarepivotallabs/cf-mgmt/configcommands"
 // BaseCFConfigCommand - base command that has details to connect to cloud foundry instance
 type BaseCFConfigCommand struct {
 	configcommands.BaseConfigCommand
-	SystemDomain string `long:"system-domain" env:"SYSTEM_DOMAIN"  description:"system domain"`
-	UserID       string `long:"user-id" env:"USER_ID"  description:"user id that has privileges to create/update/delete users, orgs and spaces"`
-	Password     string `long:"password" env:"PASSWORD"  description:"password for user account [optional if client secret is provided]"`
-	ClientSecret string `long:"client-secret" env:"CLIENT_SECRET" description:"secret for user account that has sufficient privileges to create/update/delete users, orgs and spaces]"`
+	SystemDomain      string `long:"system-domain" env:"SYSTEM_DOMAIN"  description:"system domain"`
+	UserID            string `long:"user-id" env:"USER_ID"  description:"user id that has privileges to create/update/delete users, orgs and spaces"`
+	Password          string `long:"password" env:"PASSWORD"  description:"password for user account [optional if client secret is provided]"`
+	ClientSecret      string `long:"client-secret" env:"CLIENT_SECRET" description:"secret for user account that has sufficient privileges to create/update/delete users, orgs and spaces]"`
+	SkipSSLValidation bool   `long:"skip-ssl-validation" env:"SKIP_SSL_VALIDATION" description:"skip TLS certificate verification when talking to the platform [not recommended]"`
 }
 
 // BaseLDAPCommand - base command that has ldap password

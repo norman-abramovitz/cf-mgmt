@@ -94,10 +94,13 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool, ldapMgr 
 	cfMgmt.SystemDomain = baseCommand.SystemDomain
 	cfMgmt.ConfigManager = config.NewManager(cfMgmt.ConfigDirectory)
 
+	if baseCommand.SkipSSLValidation {
+		lo.G.Warning("TLS certificate verification is disabled (--skip-ssl-validation)")
+	}
 	httpClient := &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: true,
+				InsecureSkipVerify: baseCommand.SkipSSLValidation,
 			},
 		},
 	}
@@ -166,7 +169,7 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool, ldapMgr 
 	capiConfig := &capi.Config{
 		APIEndpoint:   fmt.Sprintf("https://api.%s", cfMgmt.SystemDomain),
 		UserAgent:     userAgent,
-		SkipTLSVerify: true,
+		SkipTLSVerify: baseCommand.SkipSSLValidation,
 		HTTPTimeout:   time.Minute,
 	}
 	if baseCommand.Password != "" {
@@ -176,10 +179,11 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool, ldapMgr 
 		capiConfig.ClientID = baseCommand.UserID
 		capiConfig.ClientSecret = baseCommand.ClientSecret
 	}
-	// the capi client only honors SkipTLSVerify in explicit dev mode;
-	// cf-mgmt has always skipped TLS verification, so preserve that until
-	// a skip-ssl-validation flag exists
-	os.Setenv("CAPI_DEV_MODE", "true")
+	if baseCommand.SkipSSLValidation {
+		// the capi client only honors SkipTLSVerify behind this gate; the
+		// operator opted in explicitly via --skip-ssl-validation
+		os.Setenv("CAPI_DEV_MODE", "true")
+	}
 	capiClient, err := capicf.New(context.Background(), capiConfig)
 	if err != nil {
 		return nil, err
@@ -210,7 +214,7 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool, ldapMgr 
 	}
 	// needs to not include bearer prefix
 	token = strings.Replace(token, "bearer ", "", 1)
-	routingAPIClient := routing_api.NewClient(c.ApiAddress, true)
+	routingAPIClient := routing_api.NewClient(c.ApiAddress, baseCommand.SkipSSLValidation)
 	routingAPIClient.SetToken(token)
 	cfMgmt.SharedDomainManager = shareddomain.NewManager(client, routingAPIClient, cfg, peek)
 	return cfMgmt, nil
