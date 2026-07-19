@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	routing_api "code.cloudfoundry.org/routing-api"
 	"github.com/cloudfoundry-community/go-cfclient"
@@ -144,6 +145,8 @@ func InitializePeekManagers(baseCommand BaseCFConfigCommand, peek bool, ldapMgr 
 	c.HttpClient = httpClient
 	cv3.UserAgent = userAgent
 	cv3.WithHTTPClient(httpClient)
+	// large foundations regularly exceed the client's default 30s timeout
+	cv3.WithRequestTimeout(time.Minute)
 
 	client, err := cfclient.NewClient(c)
 	if err != nil {
