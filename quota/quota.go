@@ -95,7 +95,7 @@ func (m *Manager) CreateSpaceQuotas() error {
 			spaceQuota := quotas[input.NamedQuota]
 
 			if m.Peek != true {
-				if spaceQuota != nil && (space.Relationships.Quota.Data == nil || space.Relationships.Quota.Data.GUID != spaceQuota.GUID) {
+				if spaceQuota != nil && (space.Relationships.Quota == nil || space.Relationships.Quota.Data == nil || space.Relationships.Quota.Data.GUID != spaceQuota.GUID) {
 					if err = m.AssignQuotaToSpace(space, spaceQuota); err != nil {
 						return err
 					}
@@ -197,10 +197,14 @@ func (m *Manager) createSpaceQuota(input config.SpaceQuota, space *resource.Spac
 			}
 		}
 	} else {
+		// create the quota already related to its space (the org relationship
+		// comes from NewSpaceQuotaCreate) so a separate apply call is not needed
+		quota.Relationships.Spaces = &resource.ToManyRelationships{Data: []resource.Relationship{{GUID: space.GUID}}}
 		createdQuota, err := m.CreateSpaceQuota(quota)
 		if err != nil {
 			return err
 		}
+		space.Relationships.Quota = &resource.ToOneRelationship{Data: &resource.Relationship{GUID: createdQuota.GUID}}
 		quotas[input.Name] = createdQuota
 	}
 	return nil
